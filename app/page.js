@@ -7,6 +7,7 @@ export default function Home() {
   const [code, setCode] = useState(""); // 用於保存Python代碼
   const [input, setInput] = useState(""); // 用於多行輸入
   const [output, setOutput] = useState(""); // 用於顯示執行結果
+  const [testResult, setTestResult] = useState(null); // 測試結果顯示
 
   useEffect(() => {
     const loadPyodideLibrary = async () => {
@@ -57,6 +58,19 @@ export default function Home() {
     };
   }, []);
 
+  // 加載測試數據
+  const loadTestCases = async () => {
+    try {
+      const response = await fetch("/test_cases.json");
+      const testCases = await response.json();
+      return testCases;
+    } catch (err) {
+      console.error("Failed to load test cases:", err);
+      setTestResult("Failed to load test cases.");
+      return null;
+    }
+  };
+
   const handleRunCode = async () => {
     if (!pyodide) {
       setOutput("Pyodide is still loading...");
@@ -71,7 +85,6 @@ export default function Home() {
 
     try {
       // 捕獲Python執行時的標準輸出
-      pyodide.globals.set("captured_output", "");
       const captureOutput = `import sys\nfrom io import StringIO\nsys.stdout = StringIO()\n`;
 
       // 執行Python代碼，並將多行輸入模擬為標準輸入
@@ -83,6 +96,49 @@ export default function Home() {
     } catch (err) {
       setOutput("Error: " + err.message);
     }
+  };
+
+  const handleTestCode = async () => {
+    if (!pyodide) {
+      setOutput("Pyodide is still loading...");
+      return;
+    }
+
+    const testCases = await loadTestCases();
+    if (!testCases) return;
+
+    let allPassed = true;
+    for (const testCase of testCases) {
+      for (let i = 0; i < testCase.inputs.length; i++) {
+        const inputString = testCase.inputs[i];
+        const expectedOutput = testCase.expectedOutputs[i];
+
+        // 使用 input 模擬標準輸入
+        const inputScript = `import sys\nfrom io import StringIO\nsys.stdin = StringIO("${inputString}")\n`;
+
+        try {
+          // 捕獲Python執行時的標準輸出
+          const captureOutput = `import sys\nfrom io import StringIO\nsys.stdout = StringIO()\n`;
+
+          // 執行Python代碼，並模擬當前測試的輸入
+          await pyodide.runPythonAsync(captureOutput + inputScript + code);
+
+          // 獲取執行結果
+          const result = pyodide.runPython("sys.stdout.getvalue()").trim();
+
+          if (result !== expectedOutput) {
+            allPassed = false;
+            break;
+          }
+        } catch (err) {
+          console.error("Error during testing:", err);
+          setTestResult("測試不通過");
+          return;
+        }
+      }
+    }
+
+    setTestResult(allPassed ? "測試通過" : "測試不通過");
   };
 
   return (
@@ -131,10 +187,23 @@ export default function Home() {
               border: "none",
               borderRadius: "5px",
               cursor: "pointer",
-              marginTop: "10px",
+              marginRight: "10px",
             }}
           >
             Run
+          </button>
+          <button
+            onClick={handleTestCode}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#28a745",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Test
           </button>
 
           <h2>Output</h2>
@@ -151,6 +220,21 @@ export default function Home() {
           >
             {output}
           </pre>
+
+          {testResult && (
+            <div
+              style={{
+                backgroundColor:
+                  testResult === "測試通過" ? "#28a745" : "#dc3545",
+                color: "#fff",
+                padding: "10px",
+                marginTop: "10px",
+                borderRadius: "5px",
+              }}
+            >
+              {testResult}
+            </div>
+          )}
         </>
       ) : loadingError ? (
         <p style={{ color: "red" }}>{loadingError}</p>
