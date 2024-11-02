@@ -1,7 +1,18 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import * as React from "react";
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Home() {
+  const { setTheme } = useTheme();
   const [pyodide, setPyodide] = useState(null);
   const [loadingError, setLoadingError] = useState(null);
   const [code, setCode] = useState(""); // 初始Python代碼
@@ -81,6 +92,14 @@ export default function Home() {
     if (!pyodide) {
       setOutput("Pyodide is still loading...");
       return;
+    }
+
+    // 使用正則表達式檢查是否有 "while True"
+    const infiniteLoopPattern = /while\s+True/g;
+
+    if (infiniteLoopPattern.test(code)) {
+      setOutput("禁用無窮迴圈");
+      return; // 如果包含無窮迴圈，則不執行
     }
 
     const inputLines = input.split("\n");
@@ -167,106 +186,137 @@ export default function Home() {
   // 在元件初次載入時，立即同步高度
   useEffect(() => {
     syncHeights();
-  }, [output]); // 每次 output 更新時都同步高度
+  }, []);
 
   return (
-    <div className="p-5 font-sans max-w-5xl mx-auto">
-      <h1 className="text-2xl mb-4">
-        Python Execution with Pyodide in Next.js
-      </h1>
-      {pyodide ? (
-        <>
-          <div className="flex flex-col w-full gap-5">
-            {/* 程式區 */}
-            <div className="w-full">
-              <h2 className="text-lg mb-2">Code</h2>
-              <div className="flex h-auto">
-                {/* 行數顯示 */}
-                <pre
-                  ref={lineNumberRef}
-                  className="bg-gray-200 text-gray-500 p-2 text-right select-none overflow-hidden"
-                  style={{
-                    fontFamily: "monospace",
-                    lineHeight: "1.5em",
-                    width: "30px",
-                  }}
-                >
-                  {Array.from(
-                    { length: code.split("\n").length || 1 },
-                    (_, i) => i + 1
-                  ).join("\n")}
-                </pre>
-                <textarea
-                  ref={textAreaRef}
-                  placeholder="Enter your Python code here"
-                  value={code}
-                  onChange={updateEditor}
-                  className="w-full border-none outline-none resize-none bg-gray-800 text-white p-2 h-60"
-                  style={{
-                    fontFamily: "monospace",
-                    lineHeight: "1.5em",
-                  }}
-                />
+    <main>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon">
+            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setTheme("light")}>
+            Light
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setTheme("dark")}>
+            Dark
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setTheme("system")}>
+            System
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <pre className="p-5 font-sans max-w-5xl mx-auto">
+        <h1 className="text-2xl mb-4">Python</h1>
+        <div className="text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 pr-4 pl-4 pt-3 pb-3 rounded break-words whitespace-normal max-w-full">
+          期中考結束了，老師想要幫大家算平均分數。
+          這次期中考有國語、英文、數學、社會、自然五科。
+          老師將會先輸入同學的名字後一次輸入五科的成績，請根據輸出範例幫老師撰寫平均分數計算機。
+        </div>
+        <hr className="border-t border-gray-300 my-4" />
+
+        {pyodide ? (
+          <>
+            <div className="flex flex-col w-full gap-5">
+              {/* 程式區 */}
+              <div className="w-full">
+                <h2 className="text-lg mb-2">Code</h2>
+                <div className="flex h-auto">
+                  {/* 行數顯示 */}
+                  <pre
+                    ref={lineNumberRef}
+                    className="bg-gray-200 dark:bg-gray-700 text-gray-500 p-2 text-right select-none overflow-hidden h-60"
+                    style={{
+                      fontFamily: "monospace",
+                      lineHeight: "1.5em",
+                      width: "30px",
+                    }}
+                  >
+                    {Array.from(
+                      { length: Math.max(code.split("\n").length || 1, 1) },
+                      (_, i) => i + 1
+                    ).join("\n")}
+                  </pre>
+                  <textarea
+                    ref={textAreaRef}
+                    placeholder="Enter your Python code here"
+                    value={code}
+                    onChange={updateEditor}
+                    className="w-full border-none outline-none resize-none bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 h-auto "
+                    style={{
+                      fontFamily: "monospace",
+                      lineHeight: "1.5em",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* 輸入和輸出區域 */}
+              <div className="flex gap-5">
+                {/* 輸入區 */}
+                <div className="flex-1 w-7/12 relative">
+                  <h2 className="text-lg mb-2">Inputs</h2>
+                  <textarea
+                    ref={inputAreaRef}
+                    rows="10"
+                    placeholder="Enter each input on a new line"
+                    value={input}
+                    onChange={(e) => {
+                      setInput(e.target.value);
+                      syncHeights(); // 在輸入變更時同步高度
+                    }}
+                    className="w-full bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 resize-none h-58"
+                  />
+                  <button
+                    onClick={handleRunCode}
+                    className="absolute bottom-1.5 right-0 px-4 py-2 bg-blue-500 text-white rounded"
+                    style={{
+                      borderBottomRightRadius: "0", // 右上角不做圓角
+                      borderTopRightRadius: "0", // 左上角不做圓角
+                      borderBottomLeftRadius: "0", // 左下角不做圓角
+                    }}
+                  >
+                    Run
+                  </button>
+                </div>
+
+                {/* 輸出區 */}
+                <div className="flex-1 w-5/12">
+                  <h2 className="text-lg mb-2">Output</h2>
+                  <pre
+                    ref={outputRef}
+                    className="whitespace-pre-wrap bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 p-3 mt-2 rounded"
+                    style={{
+                      minHeight: "240px", // 保持最小高度
+                      maxHeight: "none", // 讓它隨內容高度自動擴展
+                    }}
+                  >
+                    {output}
+                  </pre>
+                </div>
               </div>
             </div>
 
-            {/* 輸入和輸出區域 */}
-            <div className="flex gap-5">
-              {/* 輸入區 */}
-              <div className="flex-1 w-7/12 relative">
-                <h2 className="text-lg mb-2">Inputs</h2>
-                <textarea
-                  ref={inputAreaRef}
-                  rows="10"
-                  placeholder="Enter each input on a new line"
-                  value={input}
-                  onChange={(e) => {
-                    setInput(e.target.value);
-                    syncHeights(); // 在輸入變更時同步高度
-                  }}
-                  className="w-full bg-gray-800 text-gray-300 p-2 resize-none h-52"
-                />
-                <button
-                  onClick={handleRunCode}
-                  className="absolute bottom-1.5 right-0 px-4 py-2 bg-blue-500 text-white rounded"
-                  style={{
-                    borderBottomRightRadius: "0", // 右上角不做圓角
-                    borderTopRightRadius: "0", // 左上角不做圓角
-                    borderBottomLeftRadius: "0", // 左下角不做圓角
-                  }}
-                >
-                  Run
-                </button>
+            {testResult && (
+              <div
+                className={`p-3 mt-2 rounded text-white ${
+                  testResult === "測試通過" ? "bg-green-500" : "bg-red-500"
+                }`}
+              >
+                {testResult}
               </div>
-
-              {/* 輸出區 */}
-              <div className="flex-1 w-5/12">
-                <h2 className="text-lg mb-2">Output</h2>
-                <pre
-                  ref={outputRef}
-                  className="whitespace-pre-wrap bg-gray-100 text-gray-800 p-3 mt-2 rounded h-52"
-                >
-                  {output}
-                </pre>
-              </div>
-            </div>
-          </div>
-
-          {testResult && (
-            <div
-              className={`p-3 mt-2 rounded text-white ${
-                testResult === "測試通過" ? "bg-green-500" : "bg-red-500"
-              }`}
-            >
-              {testResult}
-            </div>
-          )}
-        </>
-      ) : loadingError ? (
-        <p className="text-red-500">{loadingError}</p>
-      ) : (
-        <p>Loading Pyodide...</p>
-      )}
-    </div>
+            )}
+          </>
+        ) : loadingError ? (
+          <p className="text-red-500">{loadingError}</p>
+        ) : (
+          <p>Loading Pyodide...</p>
+        )}
+      </pre>
+    </main>
   );
 }
