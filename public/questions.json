@@ -1,0 +1,93 @@
+[
+    {
+        "id": 1,
+        "title": "輸入、打印和數字",
+        "pages": [
+            {
+                "id": 101,
+                "title": "三個數字的總和",
+                "url": "aplusbplusc",
+                "description": "此題要求計算三個數字的總和。",
+                "examples": [
+                    {
+                        "input": "5\n3\n7\n",
+                        "output": "15"
+                    },
+                    {
+                        "input": "10\n10\n10\n",
+                        "output": "30"
+                    }
+                ],
+                "check": [
+                    {
+                        "input": "1\n1\n1\n",
+                        "expected_output": "3"
+                    },
+                    {
+                        "input": "0\n0\n0\n",
+                        "expected_output": "0"
+                    }
+                ]
+            },
+            {
+                "id": 102,
+                "title": "嗨，約翰",
+                "url": "hi_john",
+                "description": "此題要求輸出對約翰的問候語。",
+                "examples": [
+                    {
+                        "input": "John",
+                        "output": "Hello, John!"
+                    }
+                ],
+                "check": [
+                    {
+                        "input": "Alice",
+                        "expected_output": "Hello, Alice!"
+                    }
+                ]
+            },
+            {
+                "id": 103,
+                "title": "平方",
+                "url": "square",
+                "description": "計算給定數字的平方。",
+                "examples": [
+                    {
+                        "input": "4",
+                        "output": "16"
+                    }
+                ],
+                "check": [
+                    {
+                        "input": "5",
+                        "expected_output": "25"
+                    }
+                ]
+            },
+            {
+                "id": 104,
+                "title": "直角三角形的面積",
+                "url": "area_of_right_triangle",
+                "description": "計算直角三角形的面積。",
+                "examples": [
+                    {
+                        "input": "3\n4",
+                        "output": "6"
+                    }
+                ],
+                "check": [
+                    {
+                        "input": "5\n12",
+                        "expected_output": "30"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "title": "整數和浮點數",
+        "pages": []
+    }
+]

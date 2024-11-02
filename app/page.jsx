@@ -16,6 +16,7 @@ const Sidebar = ({ topics, onSelect, className }) => {
 
   const toggleExpand = (index) => {
     setExpanded(expanded === index ? null : index);
+    console.log(`Toggled topic index: ${index}`);
   };
 
   return (
@@ -35,13 +36,15 @@ const Sidebar = ({ topics, onSelect, className }) => {
               <ul className="ml-4">
                 {topic.pages.map((page) => (
                   <li key={page.id}>
-                    <a
-                      href={`/${page.url}`} // 使用 JSON 中的 url 屬性
+                    <button
                       className="block py-1 hover:bg-blue-500 hover:text-white rounded"
-                      onClick={() => onSelect(page.title)}
+                      onClick={() => {
+                        console.log(`Selected page: ${page.title} with id: ${page.id}`);
+                        onSelect(page); // 將整個 page 對象傳遞
+                      }} 
                     >
                       {page.title}
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -63,19 +66,49 @@ export default function Home() {
   const [output, setOutput] = useState(""); // 用於顯示執行結果
   const [testResult, setTestResult] = useState(null); // 測試結果顯示
   const [testCases, setTestCases] = useState([]); // 存儲所有測試案例
-  const [selectedTestId, setSelectedTestId] = useState(0); // 選擇的測試案例 id
+  const [selectedQuestion, setSelectedQuestion] = useState(null); // 儲存當前選擇的問題
   const textAreaRef = useRef(null); // 程式區域參考
   const inputAreaRef = useRef(null); // 輸入區域參考
   const lineNumberRef = useRef(null); // 參考行數區域
   const outputRef = useRef(null); // 輸出區域參考
+
+  const handleSelectQuestion = async (page) => {
+    console.log(`Selected page: ${page.title} with id: ${page.id}`);
+    try {
+      const questionData = await fetch(`/questions.json`);
+      
+      if (!questionData.ok) {
+        throw new Error(`HTTP error! status: ${questionData.status}`);
+      }
+      
+      const questionJson = await questionData.json();
+      console.log('Fetched questions:', questionJson);
+  
+      // 檢查 questionJson 的結構，並找到對應的問題
+      const selected = questionJson.flatMap(topic => topic.pages).find((q) => q.id === page.id);
+      console.log(`Attempting to select question with id: ${page.id}`);
+      
+      if (selected) {
+        console.log(`Selected question:`, selected);
+        setSelectedQuestion(selected);
+      } else {
+        console.warn(`No question found with id: ${page.id}`);
+        setSelectedQuestion(null); // 若無找到對應題目則清空選擇
+      }
+    } catch (error) {
+      console.error("Error fetching question data:", error);
+      setSelectedQuestion(null);
+    }
+  };
+    
+  
 
   useEffect(() => {
     const loadTopics = async () => {
       try {
         const response = await fetch("/pages.json"); // 從 public 文件夾獲取 JSON
         const data = await response.json();
-        
-        // 檢查 data 是否為數組
+        console.log('Loaded topics:', data);
         if (Array.isArray(data)) {
           setTopics(data); // 設置主題
         } else {
@@ -103,6 +136,7 @@ export default function Home() {
                   indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.3/full/",
                 });
                 setPyodide(pyodideInstance);
+                console.log("Pyodide loaded successfully.");
               } catch (err) {
                 console.error("Failed to initialize Pyodide:", err);
                 setLoadingError("Failed to initialize Pyodide.");
@@ -130,8 +164,12 @@ export default function Home() {
 
     const loadTestCases = async () => {
       try {
-        const response = await fetch("/test_cases.json");
+        const response = await fetch("/questions.json");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
+        console.log('Loaded test cases:', data);
         setTestCases(data);
       } catch (err) {
         console.error("Failed to load test cases:", err);
@@ -156,7 +194,6 @@ export default function Home() {
       return;
     }
 
-    // 使用正則表達式檢查是否有 "while True"
     const infiniteLoopPattern = /while\s+True/g;
 
     if (infiniteLoopPattern.test(code)) {
@@ -174,6 +211,7 @@ export default function Home() {
       await pyodide.runPythonAsync(captureOutput + inputScript + code);
       const result = pyodide.runPython("sys.stdout.getvalue()");
       setOutput(result);
+      console.log("Code output:", result);
     } catch (err) {
       setOutput("Error: " + err.message);
     }
@@ -204,6 +242,7 @@ export default function Home() {
         const captureOutput = `import sys\nfrom io import StringIO\nsys.stdout = StringIO()\n`;
         await pyodide.runPythonAsync(captureOutput + inputScript + code);
         const result = pyodide.runPython("sys.stdout.getvalue()").trim();
+        console.log(`Testing input: ${inputString}, expected: ${expectedOutput}, got: ${result}`);
 
         if (result !== expectedOutput) {
           allPassed = false;
@@ -226,26 +265,22 @@ export default function Home() {
 
   const syncHeights = () => {
     if (textAreaRef.current && lineNumberRef.current) {
-      // 取得程式碼區域的最大高度，並將行數區域的高度設置為相同
-      const maxHeight = Math.max(textAreaRef.current.scrollHeight, 240); // 保持最小高度
+      const maxHeight = Math.max(textAreaRef.current.scrollHeight, 240);
       textAreaRef.current.style.height = `${maxHeight}px`;
-      lineNumberRef.current.style.height = `${maxHeight}px`; // 同步行數區域高度
+      lineNumberRef.current.style.height = `${maxHeight}px`;
     }
 
-    // 更新輸入區域的高度
     if (inputAreaRef.current) {
-      const inputHeight = Math.max(inputAreaRef.current.scrollHeight, 240); // 保持最小高度
+      const inputHeight = Math.max(inputAreaRef.current.scrollHeight, 240);
       inputAreaRef.current.style.height = `${inputHeight}px`;
     }
 
-    // 同步輸出區域的高度
     if (outputRef.current) {
-      const outputHeight = Math.max(outputRef.current.scrollHeight, 240); // 保持最小高度
+      const outputHeight = Math.max(outputRef.current.scrollHeight, 240);
       outputRef.current.style.height = `${outputHeight}px`;
     }
   };
 
-  // 在元件初次載入時，立即同步高度
   useEffect(() => {
     syncHeights();
   }, []);
@@ -253,8 +288,8 @@ export default function Home() {
   return (
     <div className="flex">
       <Sidebar 
-        topics={topics} // 傳遞從 JSON 獲取的主題
-        onSelect={(page) => console.log(page)}
+        topics={topics} 
+        onSelect={(page) => handleSelectQuestion(page)} // 使用新的選擇處理函數
         className="text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 w-72" 
       />
 
@@ -283,20 +318,16 @@ export default function Home() {
         </div>
         <h1 className="text-2xl mb-4">Python</h1>
         <div className="text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 pr-4 pl-4 pt-3 pb-3 rounded break-words whitespace-normal max-w-full">
-          期中考結束了，老師想要幫大家算平均分數。
-          這次期中考有國語、英文、數學、社會、自然五科。
-          老師將會先輸入同學的名字後一次輸入五科的成績，請根據輸出範例幫老師撰寫平均分數計算機。
+          {selectedQuestion ? selectedQuestion.description : "選擇一個問題以顯示描述"}
         </div>
         <hr className="border-t border-gray-300 my-4" />
 
         {pyodide ? (
           <>
             <div className="flex flex-col w-full gap-5">
-              {/* 程式區 */}
               <div className="w-full">
                 <h2 className="text-lg mb-2">Code</h2>
                 <div className="flex h-auto">
-                  {/* 行數顯示 */}
                   <pre
                     ref={lineNumberRef}
                     className="bg-gray-200 dark:bg-gray-700 text-gray-500 p-2 text-right select-none overflow-hidden h-60"
@@ -325,9 +356,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 輸入和輸出區域 */}
               <div className="flex gap-5">
-                {/* 輸入區 */}
                 <div className="flex-1 w-7/12 relative">
                   <h2 className="text-lg mb-2">Inputs</h2>
                   <textarea
@@ -337,32 +366,24 @@ export default function Home() {
                     value={input}
                     onChange={(e) => {
                       setInput(e.target.value);
-                      syncHeights(); // 在輸入變更時同步高度
+                      syncHeights();
                     }}
                     className="w-full bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 resize-none h-58"
                   />
-                  <button
-                    onClick={handleRunCode}
-                    className="absolute bottom-1.5 right-0 px-4 py-2 bg-blue-500 text-white rounded"
-                    style={{
-                      borderBottomRightRadius: "0", // 右上角不做圓角
-                      borderTopRightRadius: "0", // 左上角不做圓角
-                      borderBottomLeftRadius: "0", // 左下角不做圓角
-                    }}
-                  >
-                    Run
-                  </button>
+                  <div className="mt-4">
+                    <Button onClick={handleRunCode} className="mr-2">Run</Button>
+                    <Button onClick={handleTestCode}>Test</Button>
+                  </div>
                 </div>
 
-                {/* 輸出區 */}
                 <div className="flex-1 w-5/12">
                   <h2 className="text-lg mb-2">Output</h2>
                   <pre
                     ref={outputRef}
                     className="whitespace-pre-wrap bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 p-3 mt-2 rounded"
                     style={{
-                      minHeight: "240px", // 保持最小高度
-                      maxHeight: "none", // 讓它隨內容高度自動擴展
+                      minHeight: "240px",
+                      maxHeight: "none",
                     }}
                   >
                     {output}
