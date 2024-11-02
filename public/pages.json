@@ -1,0 +1,697 @@
+[
+  {
+    "id": 1,
+    "title": "輸入、打印和數字",
+    "pages": [
+      {
+        "id": 101,
+        "title": "三個數字的總和",
+        "url": "aplusbplusc"
+      },
+      {
+        "id": 102,
+        "title": "嗨，約翰",
+        "url": "hi_john"
+      },
+      {
+        "id": 103,
+        "title": "平方",
+        "url": "square"
+      },
+      {
+        "id": 104,
+        "title": "直角三角形的面積",
+        "url": "area_of_right_triangle"
+      },
+      {
+        "id": 105,
+        "title": "你好，哈利！",
+        "url": "hello_harry"
+      },
+      {
+        "id": 106,
+        "title": "蘋果分享",
+        "url": "apple_sharing"
+      },
+      {
+        "id": 107,
+        "title": "前一個和下一個",
+        "url": "previous_and_next"
+      },
+      {
+        "id": 108,
+        "title": "兩個時間戳",
+        "url": "two_timestamps"
+      },
+      {
+        "id": 109,
+        "title": "學校的桌子",
+        "url": "school_desks"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "整數和浮點數",
+    "pages": [
+      {
+        "id": 201,
+        "title": "整數的最後一位數",
+        "url": "last_digit"
+      },
+      {
+        "id": 202,
+        "title": "兩位數",
+        "url": "two_digits"
+      },
+      {
+        "id": 203,
+        "title": "交換數字",
+        "url": "swap_digits"
+      },
+      {
+        "id": 204,
+        "title": "最後兩位數",
+        "url": "last_two_digits"
+      },
+      {
+        "id": 205,
+        "title": "十位數",
+        "url": "tens_digit"
+      },
+      {
+        "id": 206,
+        "title": "數字之和",
+        "url": "sum_of_digits"
+      },
+      {
+        "id": 207,
+        "title": "三位數的反向",
+        "url": "reverse_three_digits"
+      },
+      {
+        "id": 208,
+        "title": "合併兩個數字",
+        "url": "merge_two_numbers"
+      },
+      {
+        "id": 209,
+        "title": "循環旋轉",
+        "url": "cyclic_rotation"
+      },
+      {
+        "id": 210,
+        "title": "小數部分",
+        "url": "fractional_part"
+      },
+      {
+        "id": 211,
+        "title": "小數點後的第一位數",
+        "url": "digit_after_decimal_point"
+      },
+      {
+        "id": 212,
+        "title": "汽車路線",
+        "url": "car_route"
+      },
+      {
+        "id": 213,
+        "title": "星期幾",
+        "url": "day_of_week"
+      },
+      {
+        "id": 214,
+        "title": "數字時鐘",
+        "url": "digital_clock"
+      },
+      {
+        "id": 215,
+        "title": "總成本",
+        "url": "total_cost"
+      },
+      {
+        "id": 216,
+        "title": "世紀",
+        "url": "century"
+      },
+      {
+        "id": 217,
+        "title": "蝸牛",
+        "url": "snail"
+      },
+      {
+        "id": 218,
+        "title": "時鐘面 - 1",
+        "url": "clock_face_1"
+      },
+      {
+        "id": 219,
+        "title": "時鐘面 - 2",
+        "url": "clock_face_2"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "條件：if、then、else",
+    "pages": [
+      {
+        "id": 301,
+        "title": "是正數",
+        "url": "is_positive"
+      },
+      {
+        "id": 302,
+        "title": "是奇數",
+        "url": "is_odd"
+      },
+      {
+        "id": 303,
+        "title": "是偶數",
+        "url": "is_even"
+      },
+      {
+        "id": 304,
+        "title": "以七結尾",
+        "url": "ends_on_seven"
+      },
+      {
+        "id": 305,
+        "title": "兩個數字的最小值",
+        "url": "minimum"
+      },
+      {
+        "id": 306,
+        "title": "兩個都是奇數嗎",
+        "url": "are_both_odd"
+      },
+      {
+        "id": 307,
+        "title": "至少有一個奇數",
+        "url": "at_least_one_odd"
+      },
+      {
+        "id": 308,
+        "title": "正好一個奇數",
+        "url": "exactly_one_odd"
+      },
+      {
+        "id": 309,
+        "title": "符號函數",
+        "url": "signum"
+      },
+      {
+        "id": 310,
+        "title": "數字按升序排列",
+        "url": "are_3_ascending"
+      },
+      {
+        "id": 311,
+        "title": "是三位數",
+        "url": "is_three_digit"
+      },
+      {
+        "id": 312,
+        "title": "三個數字的最小值",
+        "url": "minimum3"
+      },
+      {
+        "id": 313,
+        "title": "相等的數字",
+        "url": "num_equal"
+      },
+      {
+        "id": 314,
+        "title": "車輛移動",
+        "url": "rook_move"
+      },
+      {
+        "id": 315,
+        "title": "棋盤 - 黑色方格",
+        "url": "chess_board_black_color"
+      },
+      {
+        "id": 316,
+        "title": "棋盤 - 相同顏色",
+        "url": "chess_board"
+      },
+      {
+        "id": 317,
+        "title": "距離最近的點",
+        "url": "distance_to_closest"
+      },
+      {
+        "id": 318,
+        "title": "數字按升序排列",
+        "url": "are_digits_ascending"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "使用範圍的for循環",
+    "pages": [
+      {
+        "id": 401,
+        "title": "計數到N",
+        "url": "count_to_n"
+      },
+      {
+        "id": 402,
+        "title": "序列 - 1",
+        "url": "series_1"
+      },
+      {
+        "id": 403,
+        "title": "前N個奇數，按升序",
+        "url": "first_n_odd_ascending"
+      },
+      {
+        "id": 404,
+        "title": "序列 - 2",
+        "url": "series_2"
+      },
+      {
+        "id": 405,
+        "title": "前N個偶數，按降序",
+        "url": "first_n_even_descending"
+      },
+      {
+        "id": 406,
+        "title": "十個數字的總和",
+        "url": "sum_of_ten_numbers"
+      },
+      {
+        "id": 407,
+        "title": "N個數字的總和",
+        "url": "sum_of_n_numbers"
+      },
+      {
+        "id": 408,
+        "title": "N個數字的乘積",
+        "url": "product_of_n_numbers"
+      },
+      {
+        "id": 409,
+        "title": "立方和",
+        "url": "sum_of_cubes"
+      },
+      {
+        "id": 410,
+        "title": "階乘",
+        "url": "factorial"
+      },
+      {
+        "id": 411,
+        "title": "零的數量",
+        "url": "how_many_zeroes"
+      },
+      {
+        "id": 412,
+        "title": "添加階乘",
+        "url": "sum_of_factorials"
+      },
+      {
+        "id": 413,
+        "title": "範圍內的平方",
+        "url": "squares_in_range"
+      },
+      {
+        "id": 414,
+        "title": "梯子",
+        "url": "ladder"
+      },
+      {
+        "id": 415,
+        "title": "是質數",
+        "url": "is_prime"
+      },
+      {
+        "id": 416,
+        "title": "範圍內的質數",
+        "url": "print_primes_in_range"
+      },
+      {
+        "id": 417,
+        "title": "範圍內質數的數量",
+        "url": "num_primes_in_range"
+      },
+      {
+        "id": 418,
+        "title": "失去的卡片",
+        "url": "lost_card"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "字符串",
+    "pages": [
+      {
+        "id": 501,
+        "title": "切片",
+        "url": "slices"
+      },
+      {
+        "id": 502,
+        "title": "單詞數量",
+        "url": "num_words"
+      },
+      {
+        "id": 503,
+        "title": "兩個部分",
+        "url": "two_halves"
+      },
+      {
+        "id": 504,
+        "title": "交換兩個單詞",
+        "url": "swap_two_words"
+      },
+      {
+        "id": 505,
+        "title": "第一次和最後一次出現",
+        "url": "first_and_last_occurrences"
+      },
+      {
+        "id": 506,
+        "title": "第二次出現",
+        "url": "second_occurrence"
+      },
+      {
+        "id": 507,
+        "title": "移除片段",
+        "url": "remove_fragment"
+      },
+      {
+        "id": 508,
+        "title": "反向片段",
+        "url": "reverse_fragment"
+      },
+      {
+        "id": 509,
+        "title": "替換子字符串",
+        "url": "replace_substring"
+      },
+      {
+        "id": 510,
+        "title": "刪除字符",
+        "url": "delete_character"
+      },
+      {
+        "id": 511,
+        "title": "在片段內替換",
+        "url": "replace_inside_fragment"
+      },
+      {
+        "id": 512,
+        "title": "刪除每第三個字符",
+        "url": "delete_every_third_char"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "while循環",
+    "pages": [
+      {
+        "id": 601,
+        "title": "平方列表",
+        "url": "list_of_squares"
+      },
+      {
+        "id": 602,
+        "title": "最小除數",
+        "url": "least_divisor"
+      },
+      {
+        "id": 603,
+        "title": "二的冪",
+        "url": "powers_of_two"
+      },
+      {
+        "id": 604,
+        "title": "晨跑",
+        "url": "morning_jog"
+      },
+      {
+        "id": 605,
+        "title": "序列的長度",
+        "url": "seq_len"
+      },
+      {
+        "id": 606,
+        "title": "序列的總和",
+        "url": "eq_sum"
+      },
+      {
+        "id": 607,
+        "title": "序列的平均值",
+        "url": "seq_avg"
+      },
+      {
+        "id": 608,
+        "title": "序列的最大值",
+        "url": "seq_max"
+      },
+      {
+        "id": 609,
+        "title": "序列中最大值的索引",
+        "url": "seq_index_of_max"
+      },
+      {
+        "id": 610,
+        "title": "序列中偶數元素的數量",
+        "url": "seq_num_even"
+      },
+      {
+        "id": 611,
+        "title": "大於前一個的元素數量",
+        "url": "seq_increasing_neighbours"
+      },
+      {
+        "id": 612,
+        "title": "第二大",
+        "url": "seq_second_max"
+      },
+      {
+        "id": 613,
+        "title": "與最大值相等的元素數量",
+        "url": "seq_num_maximal"
+      },
+      {
+        "id": 614,
+        "title": "斐波那契數字",
+        "url": "kth_fibonacci"
+      },
+      {
+        "id": 615,
+        "title": "斐波那契數字的索引",
+        "url": "is_fibonacci"
+      },
+      {
+        "id": 616,
+        "title": "連續相等元素的最大數量",
+        "url": "seq_max_chunk_of_repetitions"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "title": "列表",
+    "pages": [
+      {
+        "id": 701,
+        "title": "偶數索引",
+        "url": "even_indices"
+      },
+      {
+        "id": 702,
+        "title": "偶數元素",
+        "url": "even_elements"
+      },
+      {
+        "id": 703,
+        "title": "比前一個大",
+        "url": "increasing_neighbours"
+      },
+      {
+        "id": 704,
+        "title": "相同符號的鄰居",
+        "url": "same_sign_neighbours"
+      },
+      {
+        "id": 705,
+        "title": "比鄰居大",
+        "url": "greater_than_neighbours"
+      },
+      {
+        "id": 706,
+        "title": "最大元素",
+        "url": "maximal_element"
+      },
+      {
+        "id": 707,
+        "title": "不同元素的數量",
+        "url": "num_distinct"
+      },
+      {
+        "id": 708,
+        "title": "交換鄰居",
+        "url": "swap_neighbours"
+      },
+      {
+        "id": 709,
+        "title": "交換最小值和最大值",
+        "url": "swap_min_and_max"
+      },
+      {
+        "id": 710,
+        "title": "相等的對的數量",
+        "url": "num_equal_pairs"
+      },
+      {
+        "id": 711,
+        "title": "唯一元素",
+        "url": "unique_elements"
+      },
+      {
+        "id": 712,
+        "title": "皇后",
+        "url": "queens"
+      },
+      {
+        "id": 713,
+        "title": "保齡球道",
+        "url": "kegelbahn"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "title": "函數",
+    "pages": [
+      {
+        "id": 801,
+        "title": "線段的長度",
+        "url": "length_of_segment"
+      },
+      {
+        "id": 802,
+        "title": "負指數",
+        "url": "negative_power"
+      },
+      {
+        "id": 803,
+        "title": "大寫",
+        "url": "capitalize"
+      },
+      {
+        "id": 804,
+        "title": "指數運算",
+        "url": "power_rec"
+      },
+      {
+        "id": 805,
+        "title": "反向序列",
+        "url": "reverse_rec"
+      },
+      {
+        "id": 806,
+        "title": "斐波那契數字",
+        "url": "fibonacci_rec"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "title": "集合",
+    "pages": [
+      {
+        "id": 901,
+        "title": "不同數字的數量",
+        "url": "number_of_unique"
+      },
+      {
+        "id": 902,
+        "title": "相等數字的數量",
+        "url": "number_of_coincidental"
+      },
+      {
+        "id": 903,
+        "title": "集合的交集",
+        "url": "sets_intersection"
+      },
+      {
+        "id": 904,
+        "title": "數字是否已經遇到過",
+        "url": "occurs_before"
+      },
+      {
+        "id": 905,
+        "title": "立方",
+        "url": "cubes"
+      },
+      {
+        "id": 906,
+        "title": "某些文本中不同單詞的數量",
+        "url": "number_of_words"
+      },
+      {
+        "id": 907,
+        "title": "猜數字",
+        "url": "guess_number"
+      },
+      {
+        "id": 908,
+        "title": "多語言者",
+        "url": "polyglots"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "title": "字典",
+    "pages": [
+      {
+        "id": 1001,
+        "title": "出現的次數",
+        "url": "number_of_occurrences_before"
+      },
+      {
+        "id": 1002,
+        "title": "同義詞詞典",
+        "url": "synonym_dictionary"
+      },
+      {
+        "id": 1003,
+        "title": "美國的選舉",
+        "url": "usa_elections"
+      },
+      {
+        "id": 1004,
+        "title": "最常見的單詞",
+        "url": "most_frequent_word"
+      },
+      {
+        "id": 1005,
+        "title": "訪問權限",
+        "url": "permissions"
+      },
+      {
+        "id": 1006,
+        "title": "國家和城市",
+        "url": "countries_and_cities"
+      },
+      {
+        "id": 1007,
+        "title": "頻率分析",
+        "url": "frequency_analysis"
+      },
+      {
+        "id": 1008,
+        "title": "英拉詞典",
+        "url": "english_latin_dict"
+      }
+    ]
+  }
+]

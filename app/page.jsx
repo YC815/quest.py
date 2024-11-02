@@ -11,8 +11,51 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const Sidebar = ({ topics, onSelect, className }) => {
+  const [expanded, setExpanded] = useState(null);
+
+  const toggleExpand = (index) => {
+    setExpanded(expanded === index ? null : index);
+  };
+
+  return (
+    <nav className={`${className} w-1/4 p-4 h-screen overflow-y-auto`}>
+      <h2 className="text-xl font-bold">索引</h2>
+      <ul>
+        {topics.map((topic, index) => (
+          <li key={index}>
+            <button
+              onClick={() => toggleExpand(index)}
+              className="flex justify-between items-center w-full text-left py-2 px-1 hover:bg-blue-500 hover:text-white rounded focus:outline-none"
+            >
+              {topic.title}
+              <span>{expanded === index ? '−' : '＋'}</span>
+            </button>
+            {expanded === index && (
+              <ul className="ml-4">
+                {topic.pages.map((page) => (
+                  <li key={page.id}>
+                    <a
+                      href={`/${page.url}`} // 使用 JSON 中的 url 屬性
+                      className="block py-1 hover:bg-blue-500 hover:text-white rounded"
+                      onClick={() => onSelect(page.title)}
+                    >
+                      {page.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+};
+
 export default function Home() {
   const { setTheme } = useTheme();
+  const [topics, setTopics] = useState([]); // 用於存儲從 JSON 載入的主題
   const [pyodide, setPyodide] = useState(null);
   const [loadingError, setLoadingError] = useState(null);
   const [code, setCode] = useState(""); // 初始Python代碼
@@ -27,6 +70,25 @@ export default function Home() {
   const outputRef = useRef(null); // 輸出區域參考
 
   useEffect(() => {
+    const loadTopics = async () => {
+      try {
+        const response = await fetch("/pages.json"); // 從 public 文件夾獲取 JSON
+        const data = await response.json();
+        
+        // 檢查 data 是否為數組
+        if (Array.isArray(data)) {
+          setTopics(data); // 設置主題
+        } else {
+          throw new Error("Loaded data is not an array");
+        }
+      } catch (error) {
+        console.error("Failed to load topics:", error);
+        setLoadingError("Failed to load topics.");
+      }
+    };
+
+    loadTopics();
+
     const loadPyodideLibrary = async () => {
       try {
         const script = document.createElement("script");
@@ -189,28 +251,36 @@ export default function Home() {
   }, []);
 
   return (
-    <main>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setTheme("light")}>
-            Light
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("dark")}>
-            Dark
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("system")}>
-            System
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <pre className="p-5 font-sans max-w-5xl mx-auto">
+    <div className="flex">
+      <Sidebar 
+        topics={topics} // 傳遞從 JSON 獲取的主題
+        onSelect={(page) => console.log(page)}
+        className="text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 w-72" 
+      />
+
+      <main className="flex-1 p-5">
+        <div className="absolute top-5 right-5 z-10">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme("light")}>
+                Light
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")}>
+                Dark
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("system")}>
+                System
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <h1 className="text-2xl mb-4">Python</h1>
         <div className="text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 pr-4 pl-4 pt-3 pb-3 rounded break-words whitespace-normal max-w-full">
           期中考結束了，老師想要幫大家算平均分數。
@@ -316,7 +386,7 @@ export default function Home() {
         ) : (
           <p>Loading Pyodide...</p>
         )}
-      </pre>
-    </main>
+      </main>
+    </div>
   );
 }
