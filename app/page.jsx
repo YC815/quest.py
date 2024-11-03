@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -65,6 +64,7 @@ export default function Home() {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const textAreaRef = useRef(null);
   const outputRef = useRef(null);
+  const lineNumberRef = useRef(null); // 新增行號參考
 
   const handleSelectQuestion = async (page) => {
     try {
@@ -151,23 +151,20 @@ export default function Home() {
       return "Pyodide is still loading...";
     }
   
-    // 確保每行輸入的結尾不會造成語法錯誤
     const inputLines = inputString.split("\n").map(line => line.trim()).filter(line => line.length > 0);
-    
-    // 構建 StringIO
     const inputScript = `import sys\nfrom io import StringIO\nsys.stdin = StringIO("${inputLines.join("\\n")}")\n`;
-  
+
     try {
       const captureOutput = `import sys\nfrom io import StringIO\nsys.stdout = StringIO()\n`;
       await pyodide.runPythonAsync(captureOutput + inputScript + code);
       const result = pyodide.runPython("sys.stdout.getvalue()").trim();
+      setOutput(result); // 更新 output 狀態以顯示在 UI 中
       return result; // 返回執行結果
     } catch (err) {
       console.error("Error running code:", err);
       return ""; // 如果有錯誤，返回空字串
     }
   };
-  
 
   const handleTestCode = async (example, index) => {
     const inputString = example.input.join("\n");
@@ -200,7 +197,16 @@ export default function Home() {
     setTestResult(allPassed ? "測試通過" : "未通過測試");
   };
 
+  // 更新行號顯示
+  useEffect(() => {
+    if (textAreaRef.current && lineNumberRef.current) {
+      const lines = code.split("\n");
+      lineNumberRef.current.innerText = Array.from({ length: lines.length }, (_, i) => i + 1).join("\n");
+    }
+  }, [code]); // 當 code 更新時重新計算行號
+
   return (
+    <div className="min-h-screen bg-white dark:bg-gray-900">
     <div className="flex h-screen">
       <Sidebar 
         topics={topics} 
@@ -244,8 +250,8 @@ export default function Home() {
                 <h2 className="text-lg mb-2">Code</h2>
                 <div className="flex h-auto">
                   <pre
-                    ref={textAreaRef}
-                    className="bg-gray-200 dark:bg-gray-700 text-gray-500 p-2 text-right select-none overflow-hidden h-60"
+                    ref={lineNumberRef}
+                    className="bg-gray-200 dark:bg-gray-700 text-gray-500 p-2 text-right select-none overflow-hidden h-auto"
                     style={{
                       fontFamily: "monospace",
                       lineHeight: "1.5em",
@@ -308,7 +314,7 @@ export default function Home() {
               <div className="mt-4">
                 <h2 className="text-lg mb-2 font-bold">Examples</h2>
                 <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
-                  <thead className="bg-gray-200">
+                  <thead className="bg-gray-200 text-black dark:bg-gray-800 dark:text-white">
                     <tr>
                       <th className="border border-gray-300 p-2 text-left">Button</th>
                       <th className="border border-gray-300 p-2 text-left">Input</th>
@@ -319,13 +325,13 @@ export default function Home() {
                   <tbody>
                     {selectedQuestion.examples.map((example, index) => {
                       const isCorrect = testResults[index]?.isCorrect; // 用於判斷輸出是否正確
-                      const outputClass = isCorrect ? "bg-green-200" : "bg-red-200"; // 設置背景顏色
+                      const outputClass = isCorrect ? "bg-green-200 dark:bg-green-800" : "bg-red-200 dark:bg-red-800"; // 設置背景顏色
                       return (
-                        <tr key={index} className="hover:bg-gray-100">
+                        <tr key={index} className="hover:bg-gray-100 dark:hover:bg-gray-900">
                           <td className="border border-gray-300 p-2 text-center w-1/4">
                             <Button
                               onClick={() => handleTestCode(example, index)} // 執行測試
-                              className="text-blue-500 hover:underline"
+                              className="bg-gray-300 text-gray-900 hover:bg-gray-400 dark:bg-gray-400 dark:text-black dark:hover:bg-gray-500"
                             >
                               Run test #{index + 1}
                             </Button>
@@ -363,6 +369,7 @@ export default function Home() {
           <p>Loading Pyodide...</p>
         )}
       </main>
+    </div>
     </div>
   );
 }
