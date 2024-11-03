@@ -20,8 +20,15 @@ const geistMono = localFont({
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head />
+    <html lang="zh" suppressHydrationWarning>
+      <head>
+        <title>Quest.py | Learn Python</title>
+        <meta
+          name="description"
+          content="Quest.py 是一個互動式的 Python 練習平台，讓你通過挑戰題目和即時反饋提升 Python 技能。"
+        />
+        <link rel="icon" href="/favicon.ico" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

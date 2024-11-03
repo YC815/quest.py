@@ -19,7 +19,7 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className }) => {
 
   return (
     <nav className={`${className} w-1/4 p-4 h-screen overflow-y-auto`}>
-      <h2 className="text-xl font-bold">索引</h2>
+      <h2 className="text-xl font-bold pb-1">索引</h2>
       <ul>
         {/* 添加主頁選項 */}
         <li>
@@ -46,7 +46,7 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className }) => {
                   <li key={page.id}>
                     <button
                       onClick={() => onSelect(page)}
-                      className="block py-1 hover:bg-blue-500 hover:text-white rounded"
+                      className="block py-1 text-left pl-2 hover:bg-blue-500 hover:text-white rounded w-[calc(100%-1rem)] "
                     >
                       {page.title}
                     </button>
@@ -171,10 +171,10 @@ export default function Home() {
     if (!pyodide) {
       return "Pyodide is still loading...";
     }
-  
+
     const inputLines = inputString.split("\n").map(line => line.trim()).filter(line => line.length > 0);
     const inputScript = `import sys\nfrom io import StringIO\nsys.stdin = StringIO("${inputLines.join("\\n")}")\n`;
-  
+
     try {
       const captureOutput = `import sys\nfrom io import StringIO\nsys.stdout = StringIO()\n`;
       await pyodide.runPythonAsync(captureOutput + inputScript + code);
@@ -184,17 +184,17 @@ export default function Home() {
     } catch (err) {
       const errorMessage = `Error: ${err.message.trim()}`;
       console.error("Error running code:", err);
-  
+
       // 更新 output 和返回錯誤信息
-      setOutput(errorMessage); 
+      setOutput(errorMessage);
       return errorMessage; // 返回錯誤信息
     }
   };
-  
+
   const handleTestCode = async (example, index) => {
     const inputString = example.input.join("\n");
     const result = await handleRunCode(inputString); // 自動運行範例輸入
-  
+
     setTestResults((prevResults) => {
       const newResults = [...prevResults];
       newResults[index] = {
@@ -204,7 +204,7 @@ export default function Home() {
       return newResults;
     });
   };
-  
+
 
   const handleRunAllTests = async () => {
     const results = [];
@@ -234,19 +234,19 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <div className="flex h-screen">
-        <Sidebar 
-          topics={topics} 
+        <Sidebar
+          topics={topics}
           onSelect={(page) => {
             setShowHome(false);
             handleSelectQuestion(page);
-          }} 
+          }}
           onHomeClick={() => {
             setShowHome(true);
             setSelectedQuestion(null);
           }}
-          className="text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 w-72 h-full overflow-y-auto" 
+          className="text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 w-72 h-full overflow-y-auto "
         />
-  
+
         <main className="flex-1 p-5 h-full overflow-y-auto">
           <div className="absolute top-5 right-5 z-10">
             <DropdownMenu>
@@ -270,8 +270,8 @@ export default function Home() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <h1 className="text-2xl mb-4">Python</h1>
-  
+          <h1 className="text-2xl mb-4">Quest.py</h1>
+
           {/* 主頁內容 */}
           {showHome ? (
             <div className="text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 pr-4 pl-4 pt-3 pb-3 rounded break-words whitespace-normal max-w-full">
@@ -284,7 +284,7 @@ export default function Home() {
                 {selectedQuestion ? selectedQuestion.description : "選擇一個問題以顯示描述"}
               </div>
               <hr className="border-t border-gray-300 my-4" />
-  
+
               {pyodide ? (
                 <>
                   <div className="flex flex-col w-full gap-5">
@@ -293,7 +293,7 @@ export default function Home() {
                       <div className="flex h-auto">
                         <pre
                           ref={lineNumberRef}
-                          className="bg-gray-200 dark:bg-gray-700 text-gray-500 p-2 text-right select-none overflow-hidden h-auto"
+                          className="bg-gray-200 dark:bg-gray-700 text-gray-500 p-2 text-right select-none overflow-hidden h-auto "
                           style={{
                             fontFamily: "monospace",
                             lineHeight: "1.5em",
@@ -310,7 +310,7 @@ export default function Home() {
                           placeholder="Enter your Python code here"
                           value={code}
                           onChange={(e) => setCode(e.target.value)}
-                          className="w-full border-none outline-none resize-none bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 h-auto"
+                          className="w-full border-none outline-none resize-none bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 h-auto "
                           style={{
                             fontFamily: "monospace",
                             lineHeight: "1.5em",
@@ -318,7 +318,7 @@ export default function Home() {
                         />
                       </div>
                     </div>
-  
+
                     <div className="flex gap-5">
                       <div className="flex-1 w-7/12 relative">
                         <h2 className="text-lg mb-2">Inputs</h2>
@@ -335,16 +335,15 @@ export default function Home() {
                           <Button onClick={handleRunAllTests} className="mr-2">Test All</Button>
                           {testResult && (
                             <span
-                              className={`p-2 rounded text-white ${
-                                testResult === "測試通過" ? "bg-green-500" : "bg-red-500"
-                              }`}
+                              className={`p-2 rounded text-white ${testResult === "測試通過" ? "bg-green-500" : "bg-red-500"
+                                }`}
                             >
                               {testResult}
                             </span>
                           )}
                         </div>
                       </div>
-  
+
                       <div className="flex-1 w-5/12">
                         <h2 className="text-lg mb-2">Output</h2>
                         <pre
@@ -360,7 +359,7 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-  
+
                   {selectedQuestion && selectedQuestion.examples && (
                     <div className="mt-4">
                       <h2 className="text-lg mb-2 font-bold">Examples</h2>
@@ -415,5 +414,5 @@ export default function Home() {
       </div>
     </div>
   );
-  
+
 }
