@@ -21,7 +21,6 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
     <nav className={`${className} w-1/4 p-4 h-screen overflow-y-auto`}>
       <h2 className="text-xl font-bold pb-1">索引</h2>
       <ul>
-        {/* 添加主頁選項 */}
         <li>
           <button
             onClick={onHomeClick}
@@ -31,7 +30,6 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
             主頁
           </button>
         </li>
-        {/* 題目列表 */}
         {topics.map((topic, index) => (
           <li key={index}>
             <button
@@ -47,7 +45,13 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
                   <li key={page.id}>
                     <button
                       onClick={() => onSelect(page)}
-                      className={`block py-1 text-left pl-2 hover:bg-blue-500 hover:text-white rounded w-[calc(100%-1rem)] ${selectedPage?.id === page.id ? 'bg-gray-300 dark:bg-gray-600' : ''
+                      className={`block py-1 text-left pl-2 hover:bg-blue-500 hover:text-white rounded w-[calc(100%-1rem)] ${page.isCompleted
+                        ? selectedPage?.id === page.id
+                          ? 'bg-green-300 dark:bg-green-900' // 當前題目且已過關，顯示深綠色
+                          : 'bg-green-200 dark:bg-green-800' // 已過關但非當前題目，顯示淺綠色
+                        : selectedPage?.id === page.id
+                          ? 'bg-gray-300 dark:bg-gray-600' // 當前選中的題目但未過關，顯示灰色
+                          : '' // 其他情況保持原樣
                         }`}
                     >
                       {page.title}
@@ -62,6 +66,9 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
     </nav>
   );
 };
+
+
+
 
 
 export default function Home() {
@@ -223,19 +230,42 @@ export default function Home() {
     for (const example of selectedQuestion.examples) {
       const inputString = Array.isArray(example.input)
         ? example.input.join("\n")
-        : example.input; // 如果不是陣列，直接使用字串
+        : example.input;
 
       const result = await handleRunCode(inputString);
       results.push({
         result,
-        isCorrect: result.trim() === (Array.isArray(example.output) ? example.output.join("\n").trim() : example.output.trim()),
+        isCorrect: result.trim() === example.output.trim(),
       });
     }
 
     setTestResults(results);
     const allPassed = results.every((test) => test.isCorrect);
     setTestResult(allPassed ? "測試通過" : "未通過測試");
+
+    if (allPassed) {
+      // 更新整個題目清單以保存過關狀態
+      setTopics((prevTopics) =>
+        prevTopics.map((topic) => ({
+          ...topic,
+          pages: topic.pages.map((page) =>
+            page.id === selectedQuestion.id
+              ? { ...page, isCompleted: true } // 設定該題目為已過關
+              : page
+          ),
+        }))
+      );
+
+      // 同時更新當前選中的題目狀態
+      setSelectedQuestion((prev) => ({
+        ...prev,
+        isCompleted: true,
+      }));
+    }
   };
+
+
+
 
 
 
@@ -262,6 +292,7 @@ export default function Home() {
           }}
           selectedPage={selectedQuestion}
         />
+
 
 
         <main className="flex-1 p-5 h-full overflow-y-auto">
