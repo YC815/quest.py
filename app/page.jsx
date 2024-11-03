@@ -60,12 +60,10 @@ export default function Home() {
   const [code, setCode] = useState("");
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
-  const [testResults, setTestResults] = useState([]); // 儲存所有測試結果
-  const [testResult, setTestResult] = useState(""); // 確保這裡有定義初始值
+  const [testResults, setTestResults] = useState([]);
+  const [testResult, setTestResult] = useState(null);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const textAreaRef = useRef(null);
-  const inputAreaRef = useRef(null);
-  const lineNumberRef = useRef(null);
   const outputRef = useRef(null);
 
   const handleSelectQuestion = async (page) => {
@@ -80,7 +78,6 @@ export default function Home() {
       if (selected) {
         setSelectedQuestion(selected);
         console.log(`Selected question:`, selected);
-        setTestResults(new Array(selected.examples.length).fill("")); // 初始化測試結果
       } else {
         console.warn(`No question found with id: ${page.id}`);
         setSelectedQuestion(null);
@@ -149,94 +146,58 @@ export default function Home() {
     loadPyodideLibrary();
   }, []);
 
-  const handleRunCode = async () => {
+  const handleRunCode = async (inputString) => {
     if (!pyodide) {
-      setOutput("Pyodide is still loading...");
-      return ""; // 確保返回空字串
+      return "Pyodide is still loading...";
     }
   
-    const infiniteLoopPattern = /while\s+True/g;
-  
-    if (infiniteLoopPattern.test(code)) {
-      setOutput("禁用無窮迴圈");
-      return ""; // 確保返回空字串
-    }
-  
-    const inputLines = input.split("\n");
-    const inputScript = `import sys\nfrom io import StringIO\nsys.stdin = StringIO("${inputLines.join(
-      "\\n"
-    )}")\n`;
+    // 確保每行輸入的結尾不會造成語法錯誤
+    const inputLines = inputString.split("\n").map(line => line.trim()).filter(line => line.length > 0);
+    
+    // 構建 StringIO
+    const inputScript = `import sys\nfrom io import StringIO\nsys.stdin = StringIO("${inputLines.join("\\n")}")\n`;
   
     try {
       const captureOutput = `import sys\nfrom io import StringIO\nsys.stdout = StringIO()\n`;
       await pyodide.runPythonAsync(captureOutput + inputScript + code);
-      const result = pyodide.runPython("sys.stdout.getvalue()");
-      setOutput(result);
-      return result; // 確保返回結果
+      const result = pyodide.runPython("sys.stdout.getvalue()").trim();
+      return result; // 返回執行結果
     } catch (err) {
-      const errorMessage = err.message.trim(); // 去除多餘的空白
-      setOutput(errorMessage); // 更新輸出為錯誤信息
-      return ""; // 確保返回空字串
+      console.error("Error running code:", err);
+      return ""; // 如果有錯誤，返回空字串
     }
   };
-  
-  
   
 
   const handleTestCode = async (example, index) => {
-    const inputString = example.input.join("\n"); // 將輸入轉換為字符串
-    setInput(inputString); // 設置輸入
-  
-    const result = await handleRunCode(); // 等待結果返回
-  
-    if (result) { // 確保 result 不是空
-      const isCorrect = result.trim() === example.output.trim(); // 比較結果
-  
-      // 更新測試結果
-      setTestResults((prevResults) => {
-        const newResults = [...prevResults];
-        newResults[index] = {
-          result,
-          outputClass: isCorrect ? "bg-green-200" : "bg-red-200",
-        };
-        return newResults;
-      });
-    } else {
-      console.error("No result returned from handleRunCode");
-    }
+    const inputString = example.input.join("\n");
+    const result = await handleRunCode(inputString); // 自動運行範例輸入
+
+    setTestResults((prevResults) => {
+      const newResults = [...prevResults];
+      newResults[index] = {
+        result,
+        isCorrect: result.trim() === example.output.trim(),
+      };
+      return newResults;
+    });
   };
-  
-  
-  
 
   const handleRunAllTests = async () => {
     const results = [];
-    let allPassed = true;
-    let failedTests = [];
 
-    for (const [index, example] of selectedQuestion.examples.entries()) {
-      const result = await handleRunCode(example.input); // 執行每個範例
-      const isCorrect = result.trim() === example.output.trim();
-
-      results.push(result); // 紀錄結果
-
-      if (!isCorrect) {
-        allPassed = false;
-        failedTests.push(`Test#${index + 1}`);
-      }
+    for (const example of selectedQuestion.examples) {
+      const inputString = example.input.join("\n");
+      const result = await handleRunCode(inputString);
+      results.push({
+        result,
+        isCorrect: result.trim() === example.output.trim(),
+      });
     }
 
-    setTestResults(results.map((result, index) => ({
-      result,
-      outputClass: selectedQuestion.examples[index].output.trim() === result.trim() ? "bg-green-200" : "bg-red-200",
-    })));
-
-    // 顯示測試結果
-    if (allPassed) {
-      setTestResult("測試通過");
-    } else {
-      setTestResult(`未通過：${failedTests.join(", ")}`);
-    }
+    setTestResults(results);
+    const allPassed = results.every((test) => test.isCorrect);
+    setTestResult(allPassed ? "測試通過" : "未通過測試");
   };
 
   return (
@@ -283,7 +244,7 @@ export default function Home() {
                 <h2 className="text-lg mb-2">Code</h2>
                 <div className="flex h-auto">
                   <pre
-                    ref={lineNumberRef}
+                    ref={textAreaRef}
                     className="bg-gray-200 dark:bg-gray-700 text-gray-500 p-2 text-right select-none overflow-hidden h-60"
                     style={{
                       fontFamily: "monospace",
@@ -314,7 +275,7 @@ export default function Home() {
                 <div className="flex-1 w-7/12 relative">
                   <h2 className="text-lg mb-2">Inputs</h2>
                   <textarea
-                    ref={inputAreaRef}
+                    ref={textAreaRef}
                     rows="10"
                     placeholder="Enter each input on a new line"
                     value={input}
@@ -322,7 +283,8 @@ export default function Home() {
                     className="w-full bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 resize-none h-58"
                   />
                   <div className="mt-4">
-                    <Button onClick={handleRunCode} className="mr-2">Run</Button>
+                    <Button onClick={() => handleRunCode(input)} className="mr-2">Run</Button>
+                    <Button onClick={handleRunAllTests} className="mr-2">Test All</Button>
                   </div>
                 </div>
 
@@ -356,14 +318,13 @@ export default function Home() {
                   </thead>
                   <tbody>
                     {selectedQuestion.examples.map((example, index) => {
-                      const outputClass = testResults[index]?.outputClass || ""; // 獲取對應的背景顏色
+                      const isCorrect = testResults[index]?.isCorrect; // 用於判斷輸出是否正確
+                      const outputClass = isCorrect ? "bg-green-200" : "bg-red-200"; // 設置背景顏色
                       return (
                         <tr key={index} className="hover:bg-gray-100">
                           <td className="border border-gray-300 p-2 text-center w-1/4">
                             <Button
-                              onClick={() => {
-                                handleTestCode(example, index); // 執行測試
-                              }}
+                              onClick={() => handleTestCode(example, index)} // 執行測試
                               className="text-blue-500 hover:underline"
                             >
                               Run test #{index + 1}
@@ -376,17 +337,13 @@ export default function Home() {
                             <pre>{example.output}</pre>
                           </td>
                           <td className={`border border-gray-300 p-2 ${outputClass}`}>
-                            <pre>{testResults[index]?.result || ""}</pre>
+                            <pre>{testResults[index]?.result}</pre>
                           </td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
-
-                <div className="mt-4">
-                  <Button onClick={handleRunAllTests} className="mr-2">Test All</Button>
-                </div>
               </div>
             )}
 
