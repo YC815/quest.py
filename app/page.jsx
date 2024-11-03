@@ -16,7 +16,6 @@ const Sidebar = ({ topics, onSelect, className }) => {
 
   const toggleExpand = (index) => {
     setExpanded(expanded === index ? null : index);
-    console.log(`Toggled topic index: ${index}`);
   };
 
   return (
@@ -37,11 +36,8 @@ const Sidebar = ({ topics, onSelect, className }) => {
                 {topic.pages.map((page) => (
                   <li key={page.id}>
                     <button
+                      onClick={() => onSelect(page)}
                       className="block py-1 hover:bg-blue-500 hover:text-white rounded"
-                      onClick={() => {
-                        console.log(`Selected page: ${page.title} with id: ${page.id}`);
-                        onSelect(page); // 將整個 page 對象傳遞
-                      }} 
                     >
                       {page.title}
                     </button>
@@ -58,59 +54,50 @@ const Sidebar = ({ topics, onSelect, className }) => {
 
 export default function Home() {
   const { setTheme } = useTheme();
-  const [topics, setTopics] = useState([]); // 用於存儲從 JSON 載入的主題
+  const [topics, setTopics] = useState([]);
   const [pyodide, setPyodide] = useState(null);
   const [loadingError, setLoadingError] = useState(null);
-  const [code, setCode] = useState(""); // 初始Python代碼
-  const [input, setInput] = useState(""); // 初始輸入資料
-  const [output, setOutput] = useState(""); // 用於顯示執行結果
-  const [testResult, setTestResult] = useState(null); // 測試結果顯示
-  const [testCases, setTestCases] = useState([]); // 存儲所有測試案例
-  const [selectedQuestion, setSelectedQuestion] = useState(null); // 儲存當前選擇的問題
-  const textAreaRef = useRef(null); // 程式區域參考
-  const inputAreaRef = useRef(null); // 輸入區域參考
-  const lineNumberRef = useRef(null); // 參考行數區域
-  const outputRef = useRef(null); // 輸出區域參考
+  const [code, setCode] = useState("");
+  const [input, setInput] = useState("");
+  const [output, setOutput] = useState("");
+  const [testResults, setTestResults] = useState([]); // 儲存所有測試結果
+  const [testResult, setTestResult] = useState(""); // 確保這裡有定義初始值
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const textAreaRef = useRef(null);
+  const inputAreaRef = useRef(null);
+  const lineNumberRef = useRef(null);
+  const outputRef = useRef(null);
 
   const handleSelectQuestion = async (page) => {
-    console.log(`Selected page: ${page.title} with id: ${page.id}`);
     try {
       const questionData = await fetch(`/questions.json`);
-      
       if (!questionData.ok) {
         throw new Error(`HTTP error! status: ${questionData.status}`);
       }
-      
       const questionJson = await questionData.json();
-      console.log('Fetched questions:', questionJson);
-  
-      // 檢查 questionJson 的結構，並找到對應的問題
       const selected = questionJson.flatMap(topic => topic.pages).find((q) => q.id === page.id);
-      console.log(`Attempting to select question with id: ${page.id}`);
-      
+
       if (selected) {
-        console.log(`Selected question:`, selected);
         setSelectedQuestion(selected);
+        console.log(`Selected question:`, selected);
+        setTestResults(new Array(selected.examples.length).fill("")); // 初始化測試結果
       } else {
         console.warn(`No question found with id: ${page.id}`);
-        setSelectedQuestion(null); // 若無找到對應題目則清空選擇
+        setSelectedQuestion(null);
       }
     } catch (error) {
       console.error("Error fetching question data:", error);
       setSelectedQuestion(null);
     }
   };
-    
-  
 
   useEffect(() => {
     const loadTopics = async () => {
       try {
-        const response = await fetch("/pages.json"); // 從 public 文件夾獲取 JSON
+        const response = await fetch("/pages.json");
         const data = await response.json();
-        console.log('Loaded topics:', data);
         if (Array.isArray(data)) {
-          setTopics(data); // 設置主題
+          setTopics(data);
         } else {
           throw new Error("Loaded data is not an array");
         }
@@ -136,7 +123,6 @@ export default function Home() {
                   indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.3/full/",
                 });
                 setPyodide(pyodideInstance);
-                console.log("Pyodide loaded successfully.");
               } catch (err) {
                 console.error("Failed to initialize Pyodide:", err);
                 setLoadingError("Failed to initialize Pyodide.");
@@ -145,7 +131,7 @@ export default function Home() {
               console.error("loadPyodide function not found on window.");
               setLoadingError("Load Pyodide function not found.");
             }
-          }, 500); // 延遲 500 毫秒
+          }, 500);
         };
 
         script.onerror = () => {
@@ -161,139 +147,107 @@ export default function Home() {
     };
 
     loadPyodideLibrary();
-
-    const loadTestCases = async () => {
-      try {
-        const response = await fetch("/questions.json");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log('Loaded test cases:', data);
-        setTestCases(data);
-      } catch (err) {
-        console.error("Failed to load test cases:", err);
-        setTestResult("Failed to load test cases.");
-      }
-    };
-
-    loadTestCases();
-
-    return () => {
-      document.body
-        .querySelectorAll("script[src*='pyodide']")
-        .forEach((script) => {
-          document.body.removeChild(script);
-        });
-    };
   }, []);
 
   const handleRunCode = async () => {
     if (!pyodide) {
       setOutput("Pyodide is still loading...");
-      return;
+      return ""; // 確保返回空字串
     }
-
+  
     const infiniteLoopPattern = /while\s+True/g;
-
+  
     if (infiniteLoopPattern.test(code)) {
       setOutput("禁用無窮迴圈");
-      return; // 如果包含無窮迴圈，則不執行
+      return ""; // 確保返回空字串
     }
-
+  
     const inputLines = input.split("\n");
     const inputScript = `import sys\nfrom io import StringIO\nsys.stdin = StringIO("${inputLines.join(
       "\\n"
     )}")\n`;
-
+  
     try {
       const captureOutput = `import sys\nfrom io import StringIO\nsys.stdout = StringIO()\n`;
       await pyodide.runPythonAsync(captureOutput + inputScript + code);
       const result = pyodide.runPython("sys.stdout.getvalue()");
       setOutput(result);
-      console.log("Code output:", result);
+      return result; // 確保返回結果
     } catch (err) {
-      setOutput("Error: " + err.message);
+      const errorMessage = err.message.trim(); // 去除多餘的空白
+      setOutput(errorMessage); // 更新輸出為錯誤信息
+      return ""; // 確保返回空字串
     }
   };
+  
+  
+  
 
-  const handleTestCode = async () => {
-    if (!pyodide) {
-      setOutput("Pyodide is still loading...");
-      return;
+  const handleTestCode = async (example, index) => {
+    const inputString = example.input.join("\n"); // 將輸入轉換為字符串
+    setInput(inputString); // 設置輸入
+  
+    const result = await handleRunCode(); // 等待結果返回
+  
+    if (result) { // 確保 result 不是空
+      const isCorrect = result.trim() === example.output.trim(); // 比較結果
+  
+      // 更新測試結果
+      setTestResults((prevResults) => {
+        const newResults = [...prevResults];
+        newResults[index] = {
+          result,
+          outputClass: isCorrect ? "bg-green-200" : "bg-red-200",
+        };
+        return newResults;
+      });
+    } else {
+      console.error("No result returned from handleRunCode");
     }
+  };
+  
+  
+  
 
-    const selectedTestCase = testCases.find(
-      (testCase) => testCase.id === selectedTestId
-    );
-    if (!selectedTestCase) {
-      setTestResult("未找到指定的測試案例");
-      return;
-    }
-
+  const handleRunAllTests = async () => {
+    const results = [];
     let allPassed = true;
-    for (let i = 0; i < selectedTestCase.inputs.length; i++) {
-      const inputString = selectedTestCase.inputs[i];
-      const expectedOutput = selectedTestCase.expectedOutputs[i];
+    let failedTests = [];
 
-      const inputScript = `import sys\nfrom io import StringIO\nsys.stdin = StringIO("${inputString}")\n`;
+    for (const [index, example] of selectedQuestion.examples.entries()) {
+      const result = await handleRunCode(example.input); // 執行每個範例
+      const isCorrect = result.trim() === example.output.trim();
 
-      try {
-        const captureOutput = `import sys\nfrom io import StringIO\nsys.stdout = StringIO()\n`;
-        await pyodide.runPythonAsync(captureOutput + inputScript + code);
-        const result = pyodide.runPython("sys.stdout.getvalue()").trim();
-        console.log(`Testing input: ${inputString}, expected: ${expectedOutput}, got: ${result}`);
+      results.push(result); // 紀錄結果
 
-        if (result !== expectedOutput) {
-          allPassed = false;
-          break;
-        }
-      } catch (err) {
-        console.error("Error during testing:", err);
-        setTestResult("測試不通過");
-        return;
+      if (!isCorrect) {
+        allPassed = false;
+        failedTests.push(`Test#${index + 1}`);
       }
     }
 
-    setTestResult(allPassed ? "測試通過" : "測試不通過");
-  };
+    setTestResults(results.map((result, index) => ({
+      result,
+      outputClass: selectedQuestion.examples[index].output.trim() === result.trim() ? "bg-green-200" : "bg-red-200",
+    })));
 
-  const updateEditor = (e) => {
-    setCode(e.target.value);
-    syncHeights();
-  };
-
-  const syncHeights = () => {
-    if (textAreaRef.current && lineNumberRef.current) {
-      const maxHeight = Math.max(textAreaRef.current.scrollHeight, 240);
-      textAreaRef.current.style.height = `${maxHeight}px`;
-      lineNumberRef.current.style.height = `${maxHeight}px`;
-    }
-
-    if (inputAreaRef.current) {
-      const inputHeight = Math.max(inputAreaRef.current.scrollHeight, 240);
-      inputAreaRef.current.style.height = `${inputHeight}px`;
-    }
-
-    if (outputRef.current) {
-      const outputHeight = Math.max(outputRef.current.scrollHeight, 240);
-      outputRef.current.style.height = `${outputHeight}px`;
+    // 顯示測試結果
+    if (allPassed) {
+      setTestResult("測試通過");
+    } else {
+      setTestResult(`未通過：${failedTests.join(", ")}`);
     }
   };
-
-  useEffect(() => {
-    syncHeights();
-  }, []);
 
   return (
-    <div className="flex">
+    <div className="flex h-screen">
       <Sidebar 
         topics={topics} 
-        onSelect={(page) => handleSelectQuestion(page)} // 使用新的選擇處理函數
-        className="text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 w-72" 
+        onSelect={(page) => handleSelectQuestion(page)} 
+        className="text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 w-72 h-full overflow-y-auto" 
       />
 
-      <main className="flex-1 p-5">
+      <main className="flex-1 p-5 h-full overflow-y-auto">
         <div className="absolute top-5 right-5 z-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -346,8 +300,8 @@ export default function Home() {
                     ref={textAreaRef}
                     placeholder="Enter your Python code here"
                     value={code}
-                    onChange={updateEditor}
-                    className="w-full border-none outline-none resize-none bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 h-auto "
+                    onChange={(e) => setCode(e.target.value)}
+                    className="w-full border-none outline-none resize-none bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 h-auto"
                     style={{
                       fontFamily: "monospace",
                       lineHeight: "1.5em",
@@ -364,15 +318,11 @@ export default function Home() {
                     rows="10"
                     placeholder="Enter each input on a new line"
                     value={input}
-                    onChange={(e) => {
-                      setInput(e.target.value);
-                      syncHeights();
-                    }}
+                    onChange={(e) => setInput(e.target.value)}
                     className="w-full bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 resize-none h-58"
                   />
                   <div className="mt-4">
                     <Button onClick={handleRunCode} className="mr-2">Run</Button>
-                    <Button onClick={handleTestCode}>Test</Button>
                   </div>
                 </div>
 
@@ -391,6 +341,54 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            {selectedQuestion && (
+              <div className="mt-4">
+                <h2 className="text-lg mb-2 font-bold">Examples</h2>
+                <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
+                  <thead className="bg-gray-200">
+                    <tr>
+                      <th className="border border-gray-300 p-2 text-left">Button</th>
+                      <th className="border border-gray-300 p-2 text-left">Input</th>
+                      <th className="border border-gray-300 p-2 text-left">Correct answer</th>
+                      <th className="border border-gray-300 p-2 text-left">Your output</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedQuestion.examples.map((example, index) => {
+                      const outputClass = testResults[index]?.outputClass || ""; // 獲取對應的背景顏色
+                      return (
+                        <tr key={index} className="hover:bg-gray-100">
+                          <td className="border border-gray-300 p-2 text-center w-1/4">
+                            <Button
+                              onClick={() => {
+                                handleTestCode(example, index); // 執行測試
+                              }}
+                              className="text-blue-500 hover:underline"
+                            >
+                              Run test #{index + 1}
+                            </Button>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <pre>{Array.isArray(example.input) ? example.input.join(", ") : example.input}</pre>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <pre>{example.output}</pre>
+                          </td>
+                          <td className={`border border-gray-300 p-2 ${outputClass}`}>
+                            <pre>{testResults[index]?.result || ""}</pre>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+
+                <div className="mt-4">
+                  <Button onClick={handleRunAllTests} className="mr-2">Test All</Button>
+                </div>
+              </div>
+            )}
 
             {testResult && (
               <div

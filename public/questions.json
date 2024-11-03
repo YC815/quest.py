@@ -10,22 +10,36 @@
                 "description": "此題要求計算三個數字的總和。",
                 "examples": [
                     {
-                        "input": "5\n3\n7\n",
+                        "input": [
+                            "5",
+                            "3",
+                            "7"
+                        ],
                         "output": "15"
                     },
                     {
-                        "input": "10\n10\n10\n",
+                        "input": [
+                            "10",
+                            "10",
+                            "10"
+                        ],
                         "output": "30"
-                    }
-                ],
-                "check": [
-                    {
-                        "input": "1\n1\n1\n",
-                        "expected_output": "3"
                     },
                     {
-                        "input": "0\n0\n0\n",
-                        "expected_output": "0"
+                        "input": [
+                            "1",
+                            "1",
+                            "1"
+                        ],
+                        "output": "3"
+                    },
+                    {
+                        "input": [
+                            "0",
+                            "0",
+                            "0"
+                        ],
+                        "output": "0"
                     }
                 ]
             },
@@ -38,12 +52,10 @@
                     {
                         "input": "John",
                         "output": "Hello, John!"
-                    }
-                ],
-                "check": [
+                    },
                     {
                         "input": "Alice",
-                        "expected_output": "Hello, Alice!"
+                        "output": "Hello, Alice!"
                     }
                 ]
             },
@@ -56,12 +68,10 @@
                     {
                         "input": "4",
                         "output": "16"
-                    }
-                ],
-                "check": [
+                    },
                     {
                         "input": "5",
-                        "expected_output": "25"
+                        "output": "25"
                     }
                 ]
             },
@@ -72,14 +82,18 @@
                 "description": "計算直角三角形的面積。",
                 "examples": [
                     {
-                        "input": "3\n4",
+                        "input": [
+                            "3",
+                            "4"
+                        ],
                         "output": "6"
-                    }
-                ],
-                "check": [
+                    },
                     {
-                        "input": "5\n12",
-                        "expected_output": "30"
+                        "input": [
+                            "5",
+                            "12"
+                        ],
+                        "output": "30"
                     }
                 ]
             }
