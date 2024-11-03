@@ -7,7 +7,7 @@
                 "id": 101,
                 "title": "三個數字的總和",
                 "url": "aplusbplusc",
-                "description": "此題要求計算三個數字的總和。",
+                "description": "題目將Input三組數字，求計算三個數字的總和。",
                 "examples": [
                     {
                         "input": [
@@ -47,15 +47,15 @@
                 "id": 102,
                 "title": "嗨，約翰",
                 "url": "hi_john",
-                "description": "此題要求輸出對約翰的問候語。",
+                "description": "使用者將輸入自己的名字，請透過字串組合和使用者說「Hello!」。",
                 "examples": [
                     {
                         "input": "John",
-                        "output": "Hello, John!"
+                        "output": "Hello! John"
                     },
                     {
                         "input": "Alice",
-                        "output": "Hello, Alice!"
+                        "output": "Hello! Alice"
                     }
                 ]
             },
@@ -63,7 +63,7 @@
                 "id": 103,
                 "title": "平方",
                 "url": "square",
-                "description": "計算給定數字的平方。",
+                "description": "題目將Input一個數字，計算給定數字的平方。",
                 "examples": [
                     {
                         "input": "4",
@@ -72,28 +72,220 @@
                     {
                         "input": "5",
                         "output": "25"
+                    },
+                    {
+                        "input": "1",
+                        "output": "1"
                     }
                 ]
             },
             {
                 "id": 104,
-                "title": "直角三角形的面積",
-                "url": "area_of_right_triangle",
-                "description": "計算直角三角形的面積。",
+                "title": "三角形的面積",
+                "url": "area_of_triangle",
+                "description": "題目將Input三角形的底及高，計算此三角形的面積。",
                 "examples": [
                     {
                         "input": [
                             "3",
-                            "4"
+                            "5"
                         ],
-                        "output": "6"
+                        "output": "7.5"
                     },
                     {
                         "input": [
-                            "5",
-                            "12"
+                            "10",
+                            "2"
                         ],
-                        "output": "30"
+                        "output": "10.0"
+                    },
+                    {
+                        "input": [
+                            "179",
+                            "1534"
+                        ],
+                        "output": "137293.0"
+                    }
+                ]
+            },
+            {
+                "id": 105,
+                "title": "你好，哈利！",
+                "url": "hello_harry",
+                "description": "使用者將輸入自己的名字，請透過字串組合和使用者說「Hello!」。",
+                "examples": [
+                    {
+                        "input": "Harry",
+                        "output": "Hello, Harry!"
+                    },
+                    {
+                        "input": "Alice",
+                        "output": "Hello, Alice!"
+                    }
+                ]
+            },
+            {
+                "id": 106,
+                "title": "蘋果分享",
+                "url": "apple_sharing",
+                "description": [
+                    "[n]個學生要平分[k]顆蘋果。每個人分到相同數量的蘋果後剩下的蘋果要保留在籃子裡。",
+                    "每個學生會獲得幾顆蘋果？ 籃子中會剩下幾顆蘋果？"
+                ],
+                "examples": [
+                    {
+                        "input": [
+                            "6",
+                            "50"
+                        ],
+                        "output": [
+                            "8",
+                            "2"
+                        ]
+                    },
+                    {
+                        "input": [
+                            "1",
+                            "10"
+                        ],
+                        "output": [
+                            "10",
+                            "0"
+                        ]
+                    },
+                    {
+                        "input": [
+                            "4",
+                            "2"
+                        ],
+                        "output": [
+                            "0",
+                            "2"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 107,
+                "title": "前一個和下一個",
+                "url": "previous_and_next",
+                "description": "題目將Input一個整數，請讀取該整數並輸出其數字上一個和下一個數字。",
+                "examples": [
+                    {
+                        "input": "5",
+                        "output": [
+                            "The next number for the number 5 is 6.",
+                            "The previous number for the number 5 is 4."
+                        ]
+                    },
+                    {
+                        "input": "0",
+                        "output": [
+                            "The next number for the number 0 is 1.",
+                            "The previous number for the number 0 is -1."
+                        ]
+                    },
+                    {
+                        "input": "-5",
+                        "output": [
+                            "The next number for the number -5 is -4.",
+                            "The previous number for the number -5 is -6."
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 108,
+                "title": "兩個時間戳",
+                "url": "two_timestamps",
+                "description": [
+                    "時間戳由三個數字組成：小時、分鐘、秒數。",
+                    "題目將Input兩組時間戳，第一組時間戳不晚於第二組時間戳。",
+                    "請輸出兩組時間戳相差幾秒？"
+                ],
+                "examples": [
+                    {
+                        "input": [
+                            "1",
+                            "1",
+                            "1",
+                            "2",
+                            "2",
+                            "2"
+                        ],
+                        "output": "3661"
+                    },
+                    {
+                        "input": [
+                            "6",
+                            "1",
+                            "30",
+                            "6",
+                            "2",
+                            "10"
+                        ],
+                        "output": "40"
+                    },
+                    {
+                        "input": [
+                            "10",
+                            "8",
+                            "2",
+                            "10",
+                            "8",
+                            "2"
+                        ],
+                        "output": "0"
+                    }
+                ]
+            },
+            {
+                "id": 109,
+                "title": "學校的桌子",
+                "url": "school_tables",
+                "description": [
+                    "學校決定更新一年級新生共三個班級的課桌。每張課桌可以坐兩名學生，請輸出盡可能少量的課桌數。"
+                ],
+                "examples": [
+                    {
+                        "input": [
+                            "20",
+                            "21",
+                            "22"
+                        ],
+                        "output": "32"
+                    },
+                    {
+                        "input": [
+                            "1",
+                            "1",
+                            "1"
+                        ],
+                        "output": "3"
+                    },
+                    {
+                        "input": [
+                            "26",
+                            "20",
+                            "16"
+                        ],
+                        "output": "31"
+                    },
+                    {
+                        "input": [
+                            "25",
+                            "21",
+                            "23"
+                        ],
+                        "output": "36"
+                    },
+                    {
+                        "input": [
+                            "17",
+                            "19",
+                            "18"
+                        ],
+                        "output": "28"
                     }
                 ]
             }
@@ -102,6 +294,285 @@
     {
         "id": 2,
         "title": "整數和浮點數",
-        "pages": []
+        "pages": [
+            {
+                "id": 201,
+                "title": "整數的最後一位數",
+                "url": "last_digit",
+                "description": "題目將Input一組整數，輸出他的最後一個數字（個位數）。",
+                "examples": [
+                    {
+                        "input": "123",
+                        "output": "3"
+                    },
+                    {
+                        "input": "40",
+                        "output": "0"
+                    },
+                    {
+                        "input": "0",
+                        "output": "0"
+                    },
+                    {
+                        "input": "9",
+                        "output": "9"
+                    },
+                    {
+                        "input": "5678",
+                        "output": "8"
+                    }
+                ]
+            },
+            {
+                "id": 202,
+                "title": "兩位數",
+                "url": "two_digits",
+                "description": "題目將Input兩位數，請分別輸出十位數字以及個位數字。",
+                "examples": [
+                    {
+                        "input": "12",
+                        "output": "1 2"
+                    },
+                    {
+                        "input": "40",
+                        "output": "4 0"
+                    },
+                    {
+                        "input": "56",
+                        "output": "5 6"
+                    }
+                ]
+            },
+            {
+                "id": 203,
+                "title": "交換數字",
+                "url": "swap_digits",
+                "description": "題目將Input兩位數，請交換十位數字以及個位數字後輸出新的數字。",
+                "examples": [
+                    {
+                        "input": "12",
+                        "output": "21"
+                    },
+                    {
+                        "input": "40",
+                        "output": "4"
+                    },
+                    {
+                        "input": "56",
+                        "output": "65"
+                    },
+                    {
+                        "input": "99",
+                        "output": "99"
+                    }
+                ]
+            },
+            {
+                "id": 204,
+                "title": "最後兩位數",
+                "url": "last_two_digits",
+                "description": "題目將Input一組數字，請輸出最後兩位數字。",
+                "examples": [
+                    {
+                        "input": "123",
+                        "output": "23"
+                    },
+                    {
+                        "input": "40",
+                        "output": "40"
+                    },
+                    {
+                        "input": "1002",
+                        "output": "2"
+                    },
+                    {
+                        "input": "2",
+                        "output": "2"
+                    },
+                    {
+                        "input": "47189234",
+                        "output": "34"
+                    }
+                ]
+            },
+            {
+                "id": 205,
+                "title": "十位數",
+                "url": "tens_digit",
+                "description": "題目將Input一組數字，請輸出十位數字。",
+                "examples": [
+                    {
+                        "input": "123",
+                        "output": "2"
+                    },
+                    {
+                        "input": "40",
+                        "output": "4"
+                    },
+                    {
+                        "input": "1002",
+                        "output": "0"
+                    },
+                    {
+                        "input": "2",
+                        "output": "0"
+                    },
+                    {
+                        "input": "47189234",
+                        "output": "3"
+                    },
+                    {
+                        "input": "0",
+                        "output": "0"
+                    }
+                ]
+            },
+            {
+                "id": 206,
+                "title": "數字之和",
+                "url": "sum_of_digits",
+                "description": "題目將Input一組三位數字，請輸出各位數字數字之和。",
+                "examples": [
+                    {
+                        "input": "123",
+                        "output": "6"
+                    },
+                    {
+                        "input": "100",
+                        "output": "1"
+                    }
+                ]
+            },
+            {
+                "id": 207,
+                "title": "三位數的反向",
+                "url": "reverse_three_digits",
+                "description": "題目將Input一組三位數字，請輸出反向的三位數字。",
+                "examples": [
+                    {
+                        "input": "123",
+                        "output": "321"
+                    },
+                    {
+                        "input": "100",
+                        "output": "1"
+                    },
+                    {
+                        "input": "222",
+                        "output": "222"
+                    }
+                ]
+            },
+            {
+                "id": 208,
+                "title": "合併兩個數字",
+                "url": "merge_two_numbers",
+                "description": "題目將Input兩組數字，請輸出兩組交叉合併（請看下面的範例）後的數字。",
+                "examples": [
+                    {
+                        "input": [
+                            "12",
+                            "34"
+                        ],
+                        "output": "1324"
+                    },
+                    {
+                        "input": [
+                            "33",
+                            "55"
+                        ],
+                        "output": "3535"
+                    },
+                    {
+                        "input": [
+                            "25",
+                            "25"
+                        ],
+                        "output": "2255"
+                    },
+                    {
+                        "input": [
+                            "99",
+                            "99"
+                        ],
+                        "output": "9999"
+                    }
+                ]
+            },
+            {
+                "id": 209,
+                "title": "循環旋轉",
+                "url": "cyclic_rotation",
+                "description": "題目將Input一組數字，請輸出數字兩兩一組循環旋轉（請看下面的範例）後的數字。",
+                "examples": [
+                    {
+                        "input": "1234",
+                        "output": "3412"
+                    },
+                    {
+                        "input": "5678",
+                        "output": "7856"
+                    },
+                    {
+                        "input": "1122",
+                        "output": "2211"
+                    },
+                    {
+                        "input": "9999",
+                        "output": "9999"
+                    }
+                ]
+            },
+            {
+                "id": 210,
+                "title": "小數部分",
+                "url": "fractional_part"
+            },
+            {
+                "id": 211,
+                "title": "小數點後的第一位數",
+                "url": "digit_after_decimal_point"
+            },
+            {
+                "id": 212,
+                "title": "汽車路線",
+                "url": "car_route"
+            },
+            {
+                "id": 213,
+                "title": "星期幾",
+                "url": "day_of_week"
+            },
+            {
+                "id": 214,
+                "title": "數字時鐘",
+                "url": "digital_clock"
+            },
+            {
+                "id": 215,
+                "title": "總成本",
+                "url": "total_cost"
+            },
+            {
+                "id": 216,
+                "title": "世紀",
+                "url": "century"
+            },
+            {
+                "id": 217,
+                "title": "蝸牛",
+                "url": "snail"
+            },
+            {
+                "id": 218,
+                "title": "時鐘面 - 1",
+                "url": "clock_face_1"
+            },
+            {
+                "id": 219,
+                "title": "時鐘面 - 2",
+                "url": "clock_face_2"
+            }
+        ]
     }
 ]

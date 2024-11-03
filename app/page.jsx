@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const Sidebar = ({ topics, onSelect, onHomeClick, className }) => {
+const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => {
   const [expanded, setExpanded] = useState(null);
 
   const toggleExpand = (index) => {
@@ -25,7 +25,8 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className }) => {
         <li>
           <button
             onClick={onHomeClick}
-            className="block w-full py-2 px-1 text-left hover:bg-blue-500 hover:text-white rounded"
+            className={`block w-full py-2 px-1 text-left hover:bg-blue-500 hover:text-white rounded ${selectedPage === null ? 'bg-gray-300 dark:bg-gray-600' : ''
+              }`}
           >
             主頁
           </button>
@@ -46,7 +47,8 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className }) => {
                   <li key={page.id}>
                     <button
                       onClick={() => onSelect(page)}
-                      className="block py-1 text-left pl-2 hover:bg-blue-500 hover:text-white rounded w-[calc(100%-1rem)] "
+                      className={`block py-1 text-left pl-2 hover:bg-blue-500 hover:text-white rounded w-[calc(100%-1rem)] ${selectedPage?.id === page.id ? 'bg-gray-300 dark:bg-gray-600' : ''
+                        }`}
                     >
                       {page.title}
                     </button>
@@ -60,6 +62,7 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className }) => {
     </nav>
   );
 };
+
 
 export default function Home() {
   const { setTheme } = useTheme();
@@ -92,6 +95,11 @@ export default function Home() {
         setSelectedQuestion(selected);
         setShowHome(false); // 設定為 false 以顯示題目內容
         console.log(`Selected question:`, selected); // 確認選擇的題目
+
+        // 清空上一關的測試結果和輸出
+        setTestResults([]); // 清空測試結果
+        setTestResult(null); // 清空通過/未通過的顯示
+        setOutput(""); // 清空輸出
       } else {
         console.warn(`No question found with id: ${page.id}`);
         setSelectedQuestion(null);
@@ -101,6 +109,7 @@ export default function Home() {
       setSelectedQuestion(null);
     }
   };
+
 
 
 
@@ -192,29 +201,34 @@ export default function Home() {
   };
 
   const handleTestCode = async (example, index) => {
-    const inputString = example.input.join("\n");
-    const result = await handleRunCode(inputString); // 自動運行範例輸入
+    const inputString = Array.isArray(example.input)
+      ? example.input.join("\n")
+      : example.input; // 如果不是陣列，直接使用字串
+
+    const result = await handleRunCode(inputString);
 
     setTestResults((prevResults) => {
       const newResults = [...prevResults];
       newResults[index] = {
         result,
-        isCorrect: result.trim() === example.output.trim(),
+        isCorrect: result.trim() === (Array.isArray(example.output) ? example.output.join("\n").trim() : example.output.trim()),
       };
       return newResults;
     });
   };
 
-
   const handleRunAllTests = async () => {
     const results = [];
 
     for (const example of selectedQuestion.examples) {
-      const inputString = example.input.join("\n");
+      const inputString = Array.isArray(example.input)
+        ? example.input.join("\n")
+        : example.input; // 如果不是陣列，直接使用字串
+
       const result = await handleRunCode(inputString);
       results.push({
         result,
-        isCorrect: result.trim() === example.output.trim(),
+        isCorrect: result.trim() === (Array.isArray(example.output) ? example.output.join("\n").trim() : example.output.trim()),
       });
     }
 
@@ -222,6 +236,8 @@ export default function Home() {
     const allPassed = results.every((test) => test.isCorrect);
     setTestResult(allPassed ? "測試通過" : "未通過測試");
   };
+
+
 
   // 更新行號顯示
   useEffect(() => {
@@ -244,8 +260,9 @@ export default function Home() {
             setShowHome(true);
             setSelectedQuestion(null);
           }}
-          className="text-gray-800 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 w-72 h-full overflow-y-auto "
+          selectedPage={selectedQuestion}
         />
+
 
         <main className="flex-1 p-5 h-full overflow-y-auto">
           <div className="absolute top-5 right-5 z-10">
@@ -277,12 +294,25 @@ export default function Home() {
             <div className="text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 pr-4 pl-4 pt-3 pb-3 rounded break-words whitespace-normal max-w-full">
               <h2 className="text-xl">歡迎來到主頁</h2>
               <p>這裡是您的 Python 學習平台，請從索引中選擇一個問題以開始學習。</p>
+              <p className="mt-2 text-sm text-gray-500">本網頁題目參考自Snakify。</p>
             </div>
           ) : (
             <>
               <div className="text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 pr-4 pl-4 pt-3 pb-3 rounded break-words whitespace-normal max-w-full">
-                {selectedQuestion ? selectedQuestion.description : "選擇一個問題以顯示描述"}
+                {selectedQuestion ? (
+                  Array.isArray(selectedQuestion.description) ? (
+                    // 如果 `description` 是多行陣列，逐行顯示
+                    selectedQuestion.description.map((line, index) => (
+                      <p key={index} className="mb-2">{line}</p> // 為每行 `description` 添加一點間隔
+                    ))
+                  ) : (
+                    <p>{selectedQuestion.description}</p> // 單行的情況，直接顯示
+                  )
+                ) : (
+                  "選擇一個問題以顯示描述"
+                )}
               </div>
+
               <hr className="border-t border-gray-300 my-4" />
 
               {pyodide ? (
@@ -387,10 +417,20 @@ export default function Home() {
                                   </Button>
                                 </td>
                                 <td className="border border-gray-300 p-2">
-                                  <pre>{Array.isArray(example.input) ? example.input.join(", ") : example.input}</pre>
+                                  {/* 如果 input 是陣列，將每個元素換行顯示 */}
+                                  <pre>
+                                    {Array.isArray(example.input)
+                                      ? example.input.map((item, i) => <div key={i}>{item}</div>)
+                                      : example.input}
+                                  </pre>
                                 </td>
                                 <td className="border border-gray-300 p-2">
-                                  <pre>{example.output}</pre>
+                                  {/* 如果 output 是陣列，將每個元素換行顯示 */}
+                                  <pre>
+                                    {Array.isArray(example.output)
+                                      ? example.output.map((item, i) => <div key={i}>{item}</div>)
+                                      : example.output}
+                                  </pre>
                                 </td>
                                 <td className={`border border-gray-300 p-2 ${outputClass}`}>
                                   <pre>{testResults[index]?.result}</pre>
@@ -399,6 +439,7 @@ export default function Home() {
                             );
                           })}
                         </tbody>
+
                       </table>
                     </div>
                   )}
