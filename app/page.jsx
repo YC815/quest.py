@@ -34,7 +34,8 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
           <li key={index}>
             <button
               onClick={() => toggleExpand(index)}
-              className="flex justify-between items-center w-full text-left py-2 px-1 hover:bg-blue-500 hover:text-white rounded focus:outline-none"
+              className={`flex justify-between items-center w-full text-left py-2 px-1 hover:bg-blue-500 hover:text-white rounded focus:outline-none ${topic.isCompleted ? 'bg-green-200 dark:bg-green-800' : ''
+                }`}
             >
               {topic.title}
               <span>{expanded === index ? '−' : '＋'}</span>
@@ -45,7 +46,7 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
                   <li key={page.id}>
                     <button
                       onClick={() => onSelect(page)}
-                      className={`block py-1 text-left pl-2 hover:bg-blue-500 hover:text-white rounded w-[calc(100%-1rem)] ${page.isCompleted
+                      className={`block py-1 text-left pl-2 hover:bg-blue-500 hover:text-white  w-[calc(100%-1rem)] ${page.isCompleted
                         ? selectedPage?.id === page.id
                           ? 'bg-green-300 dark:bg-green-900' // 當前題目且已過關，顯示深綠色
                           : 'bg-green-200 dark:bg-green-800' // 已過關但非當前題目，顯示淺綠色
@@ -66,6 +67,7 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
     </nav>
   );
 };
+
 
 
 
@@ -216,9 +218,20 @@ export default function Home() {
 
     setTestResults((prevResults) => {
       const newResults = [...prevResults];
+      const expectedOutput = Array.isArray(example.output)
+        ? example.output.join("\n")
+        : example.output.toString(); // 確保期望輸出也是字串格式
+
+      // 將 result 和 expectedOutput 轉為行數組並逐行比較
+      const isCorrect = result
+        .toString()
+        .trim()
+        .split("\n")
+        .every((line, i) => line.trim() === expectedOutput.trim().split("\n")[i]);
+
       newResults[index] = {
         result,
-        isCorrect: result.trim() === (Array.isArray(example.output) ? example.output.join("\n").trim() : example.output.trim()),
+        isCorrect,
       };
       return newResults;
     });
@@ -230,12 +243,23 @@ export default function Home() {
     for (const example of selectedQuestion.examples) {
       const inputString = Array.isArray(example.input)
         ? example.input.join("\n")
-        : example.input;
+        : example.input; // 如果不是陣列，直接使用字串
 
       const result = await handleRunCode(inputString);
+      const expectedOutput = Array.isArray(example.output)
+        ? example.output.join("\n")
+        : example.output.toString();
+
+      // 將 result 和 expectedOutput 轉為行數組並逐行比較
+      const isCorrect = result
+        .toString()
+        .trim()
+        .split("\n")
+        .every((line, i) => line.trim() === expectedOutput.trim().split("\n")[i]);
+
       results.push({
         result,
-        isCorrect: result.trim() === example.output.trim(),
+        isCorrect,
       });
     }
 
@@ -244,25 +268,25 @@ export default function Home() {
     setTestResult(allPassed ? "測試通過" : "未通過測試");
 
     if (allPassed) {
-      // 更新整個題目清單以保存過關狀態
+      // 更新過關題目狀態
       setTopics((prevTopics) =>
         prevTopics.map((topic) => ({
           ...topic,
           pages: topic.pages.map((page) =>
-            page.id === selectedQuestion.id
-              ? { ...page, isCompleted: true } // 設定該題目為已過關
-              : page
+            page.id === selectedQuestion.id ? { ...page, isCompleted: true } : page
           ),
+          // 檢查大關下的所有題目是否都完成
+          isCompleted: topic.pages.every((page) => page.isCompleted || page.id === selectedQuestion.id),
         }))
       );
-
-      // 同時更新當前選中的題目狀態
       setSelectedQuestion((prev) => ({
         ...prev,
         isCompleted: true,
       }));
     }
   };
+
+
 
 
 
