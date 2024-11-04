@@ -1,14 +1,5 @@
 # 功能
 
-- Code 的 textarea
-  - Code 的顏色標記裝飾
-  - Code 的自動縮排
-  - Code 的自動函式填補
-  - ctrl/cmd+z 撤銷
-  - tab 縮排
-  - shift+tab 反縮排
-  - 選取並 tab 批次縮排
-  - 選取並 shift+tab 批次反縮排
 - 帳號紀錄進度功能
 
 # 修正

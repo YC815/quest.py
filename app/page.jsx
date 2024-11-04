@@ -31,7 +31,7 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
         <li>
           <button
             onClick={onHomeClick}
-            className={`block w-full py-2 px-1 text-left hover:bg-blue-500 hover:text-white rounded ${selectedPage === null ? 'bg-gray-300 dark:bg-gray-600' : ''
+            className={`block w-full py-2 px-1 text-left hover:bg-blue-500 hover:text-white  ${selectedPage === null ? 'bg-gray-300 dark:bg-gray-600' : ''
               }`}
           >
             主頁
@@ -41,19 +41,19 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
           <li key={index}>
             <button
               onClick={() => toggleExpand(index)}
-              className={`flex justify-between items-center w-full text-left py-2 px-1 hover:bg-blue-500 hover:text-white rounded focus:outline-none ${topic.isCompleted ? 'bg-green-200 dark:bg-green-800' : ''
+              className={`flex justify-between items-center w-full text-left py-2 px-1 hover:bg-blue-500 hover:text-white  focus:outline-none ${topic.isCompleted ? 'bg-green-200 dark:bg-green-800' : ''
                 }`}
             >
               {topic.title}
               <span>{expanded === index ? '−' : '＋'}</span>
             </button>
             {expanded === index && (
-              <ul className="ml-4">
+              <ul className="">
                 {topic.pages.map((page) => (
                   <li key={page.id}>
                     <button
                       onClick={() => onSelect(page)}
-                      className={`block py-1 text-left pl-2 hover:bg-blue-500 hover:text-white  w-[calc(100%-1rem)] ${page.isCompleted
+                      className={`block py-1 text-left pl-4 hover:bg-blue-500 hover:text-white  w-full ${page.isCompleted
                         ? selectedPage?.id === page.id
                           ? 'bg-green-300 dark:bg-green-900' // 當前題目且已過關，顯示深綠色
                           : 'bg-green-200 dark:bg-green-800' // 已過關但非當前題目，顯示淺綠色
@@ -422,7 +422,7 @@ export default function Home() {
 
                     <div className="flex gap-5">
                       <div className="flex-1 w-7/12 relative">
-                        <h2 className="text-lg mb-2">Inputs</h2>
+                        <h2 className="text-lg mb-2">Input</h2>
                         <textarea
                           ref={textAreaRef}
                           rows="10"
