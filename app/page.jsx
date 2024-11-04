@@ -12,9 +12,11 @@ import {
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 import React from 'react';
-import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { barf } from 'thememirror';
+import { dracula } from "@uiw/codemirror-theme-dracula";
+import { eclipse } from '@uiw/codemirror-theme-eclipse';
+
 const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => {
   const [expanded, setExpanded] = useState(null);
 
@@ -79,7 +81,7 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
 
 
 export default function Home() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [topics, setTopics] = useState([]);
   const [pyodide, setPyodide] = useState(null);
   const [loadingError, setLoadingError] = useState(null);
@@ -297,10 +299,6 @@ export default function Home() {
     ]
   });
 
-  const view = new EditorView({
-    parent: document.querySelector('#editor'),
-    state
-  });
   // 更新行號顯示
   useEffect(() => {
     if (textAreaRef.current && lineNumberRef.current) {
@@ -384,7 +382,7 @@ export default function Home() {
                   <div className="flex flex-col w-full gap-5">
                     <div className="w-full">
                       <h2 className="text-lg mb-2">Code</h2>
-                      <div className="flex h-auto" id="editor">
+                      <div className="flex h-auto">
                         {/* <pre
                           ref={lineNumberRef}
                           className="bg-gray-200 dark:bg-gray-700 text-gray-500 p-2 text-right select-none overflow-hidden h-auto "
@@ -411,10 +409,13 @@ export default function Home() {
                           }}
                         /> */}
                         <CodeMirror
-                          className="w-full rounded-lg shadow-lg h-aut0"
+                          className="w-full rounded-lg shadow-lg h-auto"
                           value={code}
-                          extensions={[python(), barf]}
+                          extensions={[python()]}
                           onChange={(val) => setCode(val)}
+                          theme={theme === "light" ? eclipse : dracula}
+                          style={{ fontSize: '16px' }}
+
                         />
                       </div>
                     </div>
