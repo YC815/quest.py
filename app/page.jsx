@@ -9,7 +9,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import CodeMirror from '@uiw/react-codemirror';
+import { python } from '@codemirror/lang-python';
+import React from 'react';
+import { EditorView } from '@codemirror/view';
+import { EditorState } from '@codemirror/state';
+import { barf } from 'thememirror';
 const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => {
   const [expanded, setExpanded] = useState(null);
 
@@ -285,14 +290,17 @@ export default function Home() {
       }));
     }
   };
+  const state = EditorState.create({
+    doc: 'my source code',
+    extensions: [
+      barf
+    ]
+  });
 
-
-
-
-
-
-
-
+  const view = new EditorView({
+    parent: document.querySelector('#editor'),
+    state
+  });
   // 更新行號顯示
   useEffect(() => {
     if (textAreaRef.current && lineNumberRef.current) {
@@ -300,6 +308,7 @@ export default function Home() {
       lineNumberRef.current.innerText = Array.from({ length: lines.length }, (_, i) => i + 1).join("\n");
     }
   }, [code]); // 當 code 更新時重新計算行號
+
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -375,8 +384,8 @@ export default function Home() {
                   <div className="flex flex-col w-full gap-5">
                     <div className="w-full">
                       <h2 className="text-lg mb-2">Code</h2>
-                      <div className="flex h-auto">
-                        <pre
+                      <div className="flex h-auto" id="editor">
+                        {/* <pre
                           ref={lineNumberRef}
                           className="bg-gray-200 dark:bg-gray-700 text-gray-500 p-2 text-right select-none overflow-hidden h-auto "
                           style={{
@@ -400,6 +409,12 @@ export default function Home() {
                             fontFamily: "monospace",
                             lineHeight: "1.5em",
                           }}
+                        /> */}
+                        <CodeMirror
+                          className="w-full rounded-lg shadow-lg h-aut0"
+                          value={code}
+                          extensions={[python(), barf]}
+                          onChange={(val) => setCode(val)}
                         />
                       </div>
                     </div>
