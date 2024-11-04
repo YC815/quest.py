@@ -298,6 +298,7 @@ export default function Home() {
       barf
     ]
   });
+  const showPlaceholder = code.trim() === "";
 
   // 更新行號顯示
   useEffect(() => {
@@ -382,41 +383,23 @@ export default function Home() {
                   <div className="flex flex-col w-full gap-5">
                     <div className="w-full">
                       <h2 className="text-lg mb-2">Code</h2>
-                      <div className="flex h-auto">
-                        {/* <pre
-                          ref={lineNumberRef}
-                          className="bg-gray-200 dark:bg-gray-700 text-gray-500 p-2 text-right select-none overflow-hidden h-auto "
-                          style={{
-                            fontFamily: "monospace",
-                            lineHeight: "1.5em",
-                            width: "30px",
-                          }}
-                        >
-                          {Array.from(
-                            { length: Math.max(code.split("\n").length || 1, 1) },
-                            (_, i) => i + 1
-                          ).join("\n")}
-                        </pre>
-                        <textarea
-                          ref={textAreaRef}
-                          placeholder="Enter your Python code here"
-                          value={code}
-                          onChange={(e) => setCode(e.target.value)}
-                          className="w-full border-none outline-none resize-none bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 h-auto "
-                          style={{
-                            fontFamily: "monospace",
-                            lineHeight: "1.5em",
-                          }}
-                        /> */}
+                      <div className="relative">
+                        {/* CodeMirror 編輯器 */}
                         <CodeMirror
-                          className="w-full rounded-lg shadow-lg h-auto"
                           value={code}
                           extensions={[python()]}
-                          onChange={(val) => setCode(val)}
+                          onChange={(value) => setCode(value)}
                           theme={theme === "light" ? eclipse : dracula}
+                          className="w-full h-auto rounded-lg shadow-lg"
                           style={{ fontSize: '16px' }}
-
                         />
+
+                        {/* 當無內容時顯示的佔位符 */}
+                        {showPlaceholder && (
+                          <div className="absolute top-1 left-10 pointer-events-none text-gray-400" style={{ fontSize: '16px' }}>
+                            Enter your Python code here
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -503,9 +486,10 @@ export default function Home() {
                                       : example.output}
                                   </pre>
                                 </td>
-                                <td className={`border border-gray-300 p-2 ${outputClass}`}>
+                                <td className={`border border-gray-300 p-2 ${testResults[index]?.result ? outputClass : ""}`}>
                                   <pre>{testResults[index]?.result}</pre>
                                 </td>
+
                               </tr>
                             );
                           })}
