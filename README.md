@@ -1,19 +1,18 @@
 # learn_python
+[Github link](https://github.com/YC815/quest.py)
 
-https://github.com/YC815/quest.py
+# Tools
+### auth
+- NextAuth <- monti
+- Clerk
 
-# auth
+### database
 
-NextAuth <- monti
-Clerk
+- prisma + supabase <- monti
+- Convex www.convex.dev
 
-# database
+### file upload
 
-prisma + supabase <- monti
-Convex www.convex.dev
-
-# file upload
-
-cloudflare <- monti
-Convex www.convex.dev
-Uploadthing
+- cloudflare <- monti
+- Convex www.convex.dev
+- Uploadthing
