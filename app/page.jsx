@@ -16,7 +16,10 @@ import { EditorState } from '@codemirror/state';
 import { barf } from 'thememirror';
 import { dracula } from "@uiw/codemirror-theme-dracula";
 import { eclipse } from '@uiw/codemirror-theme-eclipse';
-
+import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import { dark } from '@clerk/themes'
+import { zhTW } from '@clerk/localizations'
+import { AppProps } from 'next/app'
 const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => {
   const [expanded, setExpanded] = useState(null);
 
@@ -75,11 +78,6 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
   );
 };
 
-
-
-
-
-
 export default function Home() {
   const { theme, setTheme } = useTheme();
   const [topics, setTopics] = useState([]);
@@ -91,7 +89,7 @@ export default function Home() {
   const [testResults, setTestResults] = useState([]);
   const [testResult, setTestResult] = useState(null);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
-  const [showHome, setShowHome] = useState(true); // 新增狀態來顯示主頁
+  const [showHome, setShowHome] = useState(true);
   const textAreaRef = useRef(null);
   const outputRef = useRef(null);
   const lineNumberRef = useRef(null); // 新增行號參考
@@ -103,19 +101,17 @@ export default function Home() {
         throw new Error(`HTTP error! status: ${questionData.status}`);
       }
       const questionJson = await questionData.json();
-      console.log("Fetched questions:", questionJson); // 調試用
 
       const selected = questionJson.flatMap(topic => topic.pages).find((q) => q.id === page.id);
 
       if (selected) {
         setSelectedQuestion(selected);
-        setShowHome(false); // 設定為 false 以顯示題目內容
-        console.log(`Selected question:`, selected); // 確認選擇的題目
+        setShowHome(false);
 
         // 清空上一關的測試結果和輸出
-        setTestResults([]); // 清空測試結果
-        setTestResult(null); // 清空通過/未通過的顯示
-        setOutput(""); // 清空輸出
+        setTestResults([]);
+        setTestResult(null);
+        setOutput("");
       } else {
         console.warn(`No question found with id: ${page.id}`);
         setSelectedQuestion(null);
@@ -126,12 +122,9 @@ export default function Home() {
     }
   };
 
-
-
-
   const handleHomeClick = () => {
-    setShowHome(true); // 顯示主頁
-    setSelectedQuestion(null); // 清除已選擇的問題
+    setShowHome(true);
+    setSelectedQuestion(null);
   };
 
   useEffect(() => {
@@ -204,311 +197,233 @@ export default function Home() {
       const captureOutput = `import sys\nfrom io import StringIO\nsys.stdout = StringIO()\n`;
       await pyodide.runPythonAsync(captureOutput + inputScript + code);
       const result = pyodide.runPython("sys.stdout.getvalue()").trim();
-      setOutput(result); // 更新 output 狀態以顯示在 UI 中
-      return result; // 返回執行結果
+      setOutput(result);
+      return result;
     } catch (err) {
       const errorMessage = `Error: ${err.message.trim()}`;
       console.error("Error running code:", err);
 
-      // 更新 output 和返回錯誤信息
       setOutput(errorMessage);
-      return errorMessage; // 返回錯誤信息
+      return errorMessage;
     }
   };
-
-  const handleTestCode = async (example, index) => {
-    const inputString = Array.isArray(example.input)
-      ? example.input.join("\n")
-      : example.input; // 如果不是陣列，直接使用字串
-
-    const result = await handleRunCode(inputString);
-
-    setTestResults((prevResults) => {
-      const newResults = [...prevResults];
-      const expectedOutput = Array.isArray(example.output)
-        ? example.output.join("\n")
-        : example.output.toString(); // 確保期望輸出也是字串格式
-
-      // 將 result 和 expectedOutput 轉為行數組並逐行比較
-      const isCorrect = result
-        .toString()
-        .trim()
-        .split("\n")
-        .every((line, i) => line.trim() === expectedOutput.trim().split("\n")[i]);
-
-      newResults[index] = {
-        result,
-        isCorrect,
-      };
-      return newResults;
-    });
-  };
-
-  const handleRunAllTests = async () => {
-    const results = [];
-
-    for (const example of selectedQuestion.examples) {
-      const inputString = Array.isArray(example.input)
-        ? example.input.join("\n")
-        : example.input; // 如果不是陣列，直接使用字串
-
-      const result = await handleRunCode(inputString);
-      const expectedOutput = Array.isArray(example.output)
-        ? example.output.join("\n")
-        : example.output.toString();
-
-      // 將 result 和 expectedOutput 轉為行數組並逐行比較
-      const isCorrect = result
-        .toString()
-        .trim()
-        .split("\n")
-        .every((line, i) => line.trim() === expectedOutput.trim().split("\n")[i]);
-
-      results.push({
-        result,
-        isCorrect,
-      });
-    }
-
-    setTestResults(results);
-    const allPassed = results.every((test) => test.isCorrect);
-    setTestResult(allPassed ? "測試通過" : "未通過測試");
-
-    if (allPassed) {
-      // 更新過關題目狀態
-      setTopics((prevTopics) =>
-        prevTopics.map((topic) => ({
-          ...topic,
-          pages: topic.pages.map((page) =>
-            page.id === selectedQuestion.id ? { ...page, isCompleted: true } : page
-          ),
-          // 檢查大關下的所有題目是否都完成
-          isCompleted: topic.pages.every((page) => page.isCompleted || page.id === selectedQuestion.id),
-        }))
-      );
-      setSelectedQuestion((prev) => ({
-        ...prev,
-        isCompleted: true,
-      }));
-    }
-  };
-  const state = EditorState.create({
-    doc: 'my source code',
-    extensions: [
-      barf
-    ]
-  });
-  const showPlaceholder = code.trim() === "";
-
-  // 更新行號顯示
-  useEffect(() => {
-    if (textAreaRef.current && lineNumberRef.current) {
-      const lines = code.split("\n");
-      lineNumberRef.current.innerText = Array.from({ length: lines.length }, (_, i) => i + 1).join("\n");
-    }
-  }, [code]); // 當 code 更新時重新計算行號
-
-
+  // theme={theme === "light" ? eclipse : dracula}
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      <div className="flex h-screen">
-        <Sidebar
-          topics={topics}
-          onSelect={(page) => {
-            setShowHome(false);
-            handleSelectQuestion(page);
-          }}
-          onHomeClick={() => {
-            setShowHome(true);
-            setSelectedQuestion(null);
-          }}
-          selectedPage={selectedQuestion}
-        />
-
-
-
-        <main className="flex-1 p-5 h-full overflow-y-auto">
-          <div className="absolute top-5 right-5 z-10">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
-                  Light
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
-                  Dark
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}>
-                  System
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+    <ClerkProvider
+      appearance={{
+        baseTheme: theme === "light" ? eclipse : dark,
+        // localization: { zhTW }
+      }}>
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <SignedOut>
+          <div className="flex items-center justify-center h-screen">
+            <SignInButton mode="modal">
+              <Button>Sign In</Button>
+            </SignInButton>
           </div>
-          <h1 className="text-2xl mb-4">Quest.py</h1>
+        </SignedOut>
+        <SignedIn>
+          <div className="flex h-screen">
+            <Sidebar
+              topics={topics}
+              onSelect={(page) => {
+                setShowHome(false);
+                handleSelectQuestion(page);
+              }}
+              onHomeClick={() => {
+                setShowHome(true);
+                setSelectedQuestion(null);
+              }}
+              selectedPage={selectedQuestion}
+            />
 
-          {/* 主頁內容 */}
-          {showHome ? (
-            <div className="text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 pr-4 pl-4 pt-3 pb-3 rounded break-words whitespace-normal max-w-full">
-              <h2 className="text-xl">歡迎來到主頁</h2>
-              <p>這裡是您的 Python 學習平台，請從索引中選擇一個問題以開始學習。</p>
-              <p className="mt-2 text-sm text-gray-500">本網頁題目參考自Snakify。</p>
-            </div>
-          ) : (
-            <>
-              <div className="text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 pr-4 pl-4 pt-3 pb-3 rounded break-words whitespace-normal max-w-full">
-                {selectedQuestion ? (
-                  Array.isArray(selectedQuestion.description) ? (
-                    // 如果 `description` 是多行陣列，逐行顯示
-                    selectedQuestion.description.map((line, index) => (
-                      <p key={index} className="mb-2">{line}</p> // 為每行 `description` 添加一點間隔
-                    ))
-                  ) : (
-                    <p>{selectedQuestion.description}</p> // 單行的情況，直接顯示
-                  )
-                ) : (
-                  "選擇一個問題以顯示描述"
-                )}
+            <main className="flex-1 p-5 h-full overflow-y-auto">
+              <div className="absolute top-5 right-5 z-10 flex items-center space-x-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" >
+                      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                      <span className="sr-only">Toggle theme</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setTheme("light")}>Light</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTheme("dark")}>Dark</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTheme("system")}>System</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      userButtonPopoverCard: 'bg-white dark:bg-gray-800 shadow-lg',
+                      userButtonPrimaryButton: 'text-blue-500 hover:text-blue-600',
+                      // 其他樣式元素
+                    },
+                  }}
+                />
               </div>
 
-              <hr className="border-t border-gray-300 my-4" />
+              <h1 className="text-2xl mb-4">Quest.py</h1>
 
-              {pyodide ? (
+              {/* 主頁內容 */}
+              {showHome ? (
+                <div className="text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 pr-4 pl-4 pt-3 pb-3 rounded break-words whitespace-normal max-w-full">
+                  <h2 className="text-xl">歡迎來到主頁</h2>
+                  <p>這裡是您的 Python 學習平台，請從索引中選擇一個問題以開始學習。</p>
+                  <p className="mt-2 text-sm text-gray-500">本網頁題目參考自Snakify。</p>
+                </div>
+              ) : (
                 <>
-                  <div className="flex flex-col w-full gap-5">
-                    <div className="w-full">
-                      <h2 className="text-lg mb-2">Code</h2>
-                      <div className="relative">
-                        {/* CodeMirror 編輯器 */}
-                        <CodeMirror
-                          value={code}
-                          extensions={[python()]}
-                          onChange={(value) => setCode(value)}
-                          theme={theme === "light" ? eclipse : dracula}
-                          className="w-full h-auto rounded-lg shadow-lg"
-                          style={{ fontSize: '16px' }}
-                        />
+                  <div className="text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-100 pr-4 pl-4 pt-3 pb-3 rounded break-words whitespace-normal max-w-full">
+                    {selectedQuestion ? (
+                      Array.isArray(selectedQuestion.description) ? (
+                        // 如果 `description` 是多行陣列，逐行顯示
+                        selectedQuestion.description.map((line, index) => (
+                          <p key={index} className="mb-2">{line}</p> // 為每行 `description` 添加一點間隔
+                        ))
+                      ) : (
+                        <p>{selectedQuestion.description}</p> // 單行的情況，直接顯示
+                      )
+                    ) : (
+                      "選擇一個問題以顯示描述"
+                    )}
+                  </div>
 
-                        {/* 當無內容時顯示的佔位符 */}
-                        {showPlaceholder && (
-                          <div className="absolute top-1 left-10 pointer-events-none text-gray-400" style={{ fontSize: '16px' }}>
-                            Enter your Python code here
+                  <hr className="border-t border-gray-300 my-4" />
+
+                  {pyodide ? (
+                    <>
+                      <div className="flex flex-col w-full gap-5">
+                        <div className="w-full">
+                          <h2 className="text-lg mb-2">Code</h2>
+                          <div className="relative">
+                            {/* CodeMirror 編輯器 */}
+                            <CodeMirror
+                              value={code}
+                              extensions={[python()]}
+                              onChange={(value) => setCode(value)}
+                              theme={theme === "light" ? eclipse : dracula}
+                              className="w-full h-auto rounded-lg shadow-lg"
+                              style={{ fontSize: '16px' }}
+                            />
+
+                            {/* 當無內容時顯示的佔位符 */}
+                            {showPlaceholder && (
+                              <div className="absolute top-1 left-10 pointer-events-none text-gray-400" style={{ fontSize: '16px' }}>
+                                Enter your Python code here
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
+                        </div>
 
-                    <div className="flex gap-5">
-                      <div className="flex-1 w-7/12 relative">
-                        <h2 className="text-lg mb-2">Input</h2>
-                        <textarea
-                          ref={textAreaRef}
-                          rows="10"
-                          placeholder="Enter each input on a new line"
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          className="w-full bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 resize-none h-58"
-                        />
-                        <div className="mt-4 flex items-center space-x-4">
-                          <Button onClick={() => handleRunCode(input)} className="mr-2">Run</Button>
-                          <Button onClick={handleRunAllTests} className="mr-2">Test All</Button>
-                          {testResult && (
-                            <span
-                              className={`p-2 rounded text-white ${testResult === "測試通過" ? "bg-green-500" : "bg-red-500"
-                                }`}
+                        <div className="flex gap-5">
+                          <div className="flex-1 w-7/12 relative">
+                            <h2 className="text-lg mb-2">Input</h2>
+                            <textarea
+                              ref={textAreaRef}
+                              rows="10"
+                              placeholder="Enter each input on a new line"
+                              value={input}
+                              onChange={(e) => setInput(e.target.value)}
+                              className="w-full bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white p-2 resize-none h-58"
+                            />
+                            <div className="mt-4 flex items-center space-x-4">
+                              <Button onClick={() => handleRunCode(input)} className="mr-2">Run</Button>
+                              <Button onClick={handleRunAllTests} className="mr-2">Test All</Button>
+                              {testResult && (
+                                <span
+                                  className={`p-2 rounded text-white ${testResult === "測試通過" ? "bg-green-500" : "bg-red-500"
+                                    }`}
+                                >
+                                  {testResult}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex-1 w-5/12">
+                            <h2 className="text-lg mb-2">Output</h2>
+                            <pre
+                              ref={outputRef}
+                              className="whitespace-pre-wrap bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 p-3 mt-2 rounded"
+                              style={{
+                                minHeight: "240px",
+                                maxHeight: "none",
+                              }}
                             >
-                              {testResult}
-                            </span>
-                          )}
+                              {output}
+                            </pre>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex-1 w-5/12">
-                        <h2 className="text-lg mb-2">Output</h2>
-                        <pre
-                          ref={outputRef}
-                          className="whitespace-pre-wrap bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 p-3 mt-2 rounded"
-                          style={{
-                            minHeight: "240px",
-                            maxHeight: "none",
-                          }}
-                        >
-                          {output}
-                        </pre>
-                      </div>
-                    </div>
-                  </div>
-
-                  {selectedQuestion && selectedQuestion.examples && (
-                    <div className="mt-4">
-                      <h2 className="text-lg mb-2 font-bold">Examples</h2>
-                      <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
-                        <thead className="bg-gray-200 text-black dark:bg-gray-800 dark:text-white">
-                          <tr>
-                            <th className="border border-gray-300 p-2 text-left">Button</th>
-                            <th className="border border-gray-300 p-2 text-left">Input</th>
-                            <th className="border border-gray-300 p-2 text-left">Correct answer</th>
-                            <th className="border border-gray-300 p-2 text-left">Your output</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedQuestion.examples.map((example, index) => {
-                            const isCorrect = testResults[index]?.isCorrect; // 用於判斷輸出是否正確
-                            const outputClass = isCorrect ? "bg-green-200 dark:bg-green-800" : "bg-red-200 dark:bg-red-800"; // 設置背景顏色
-                            return (
-                              <tr key={index} className="hover:bg-gray-100 dark:hover:bg-gray-900">
-                                <td className="border border-gray-300 p-2 text-center w-1/4">
-                                  <Button
-                                    onClick={() => handleTestCode(example, index)} // 執行測試
-                                    className="bg-gray-300 text-gray-900 hover:bg-gray-400 dark:bg-gray-400 dark:text-black dark:hover:bg-gray-500"
-                                  >
-                                    Run test #{index + 1}
-                                  </Button>
-                                </td>
-                                <td className="border border-gray-300 p-2">
-                                  {/* 如果 input 是陣列，將每個元素換行顯示 */}
-                                  <pre>
-                                    {Array.isArray(example.input)
-                                      ? example.input.map((item, i) => <div key={i}>{item}</div>)
-                                      : example.input}
-                                  </pre>
-                                </td>
-                                <td className="border border-gray-300 p-2">
-                                  {/* 如果 output 是陣列，將每個元素換行顯示 */}
-                                  <pre>
-                                    {Array.isArray(example.output)
-                                      ? example.output.map((item, i) => <div key={i}>{item}</div>)
-                                      : example.output}
-                                  </pre>
-                                </td>
-                                <td className={`border border-gray-300 p-2 ${testResults[index]?.result ? outputClass : ""}`}>
-                                  <pre>{testResults[index]?.result}</pre>
-                                </td>
-
+                      {selectedQuestion && selectedQuestion.examples && (
+                        <div className="mt-4">
+                          <h2 className="text-lg mb-2 font-bold">Examples</h2>
+                          <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
+                            <thead className="bg-gray-200 text-black dark:bg-gray-800 dark:text-white">
+                              <tr>
+                                <th className="border border-gray-300 p-2 text-left">Button</th>
+                                <th className="border border-gray-300 p-2 text-left">Input</th>
+                                <th className="border border-gray-300 p-2 text-left">Correct answer</th>
+                                <th className="border border-gray-300 p-2 text-left">Your output</th>
                               </tr>
-                            );
-                          })}
-                        </tbody>
+                            </thead>
+                            <tbody>
+                              {selectedQuestion.examples.map((example, index) => {
+                                const isCorrect = testResults[index]?.isCorrect; // 用於判斷輸出是否正確
+                                const outputClass = isCorrect ? "bg-green-200 dark:bg-green-800" : "bg-red-200 dark:bg-red-800"; // 設置背景顏色
+                                return (
+                                  <tr key={index} className="hover:bg-gray-100 dark:hover:bg-gray-900">
+                                    <td className="border border-gray-300 p-2 text-center w-1/4">
+                                      <Button
+                                        onClick={() => handleTestCode(example, index)} // 執行測試
+                                        className="bg-gray-300 text-gray-900 hover:bg-gray-400 dark:bg-gray-400 dark:text-black dark:hover:bg-gray-500"
+                                      >
+                                        Run test #{index + 1}
+                                      </Button>
+                                    </td>
+                                    <td className="border border-gray-300 p-2">
+                                      {/* 如果 input 是陣列，將每個元素換行顯示 */}
+                                      <pre>
+                                        {Array.isArray(example.input)
+                                          ? example.input.map((item, i) => <div key={i}>{item}</div>)
+                                          : example.input}
+                                      </pre>
+                                    </td>
+                                    <td className="border border-gray-300 p-2">
+                                      {/* 如果 output 是陣列，將每個元素換行顯示 */}
+                                      <pre>
+                                        {Array.isArray(example.output)
+                                          ? example.output.map((item, i) => <div key={i}>{item}</div>)
+                                          : example.output}
+                                      </pre>
+                                    </td>
+                                    <td className={`border border-gray-300 p-2 ${testResults[index]?.result ? outputClass : ""}`}>
+                                      <pre>{testResults[index]?.result}</pre>
+                                    </td>
 
-                      </table>
-                    </div>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+
+                          </table>
+                        </div>
+                      )}
+                    </>
+                  ) : loadingError ? (
+                    <p className="text-red-500">{loadingError}</p>
+                  ) : (
+                    <p>Loading Pyodide...</p>
                   )}
                 </>
-              ) : loadingError ? (
-                <p className="text-red-500">{loadingError}</p>
-              ) : (
-                <p>Loading Pyodide...</p>
               )}
-            </>
-          )}
-        </main>
+            </main>
+          </div>
+        </SignedIn>
       </div>
-    </div>
+    </ClerkProvider>
   );
-
 }
