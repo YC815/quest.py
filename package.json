@@ -9,9 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/localizations": "^3.5.0",
-    "@clerk/nextjs": "^6.2.0",
-    "@clerk/themes": "^2.1.41",
+    "@clerk/nextjs": "^6.3.0",
     "@codemirror/autocomplete": "^6.18.2",
     "@codemirror/basic-setup": "^0.20.0",
     "@codemirror/commands": "^6.7.1",
