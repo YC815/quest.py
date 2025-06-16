@@ -1,47 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id       String     @id @default(cuid())
-  email    String     @unique
-  password String
-  progress Progress[]
+  id          String       @id @default(uuid()) @map("clerk_user_id") // Linked to Clerk's user ID
+  progress    Progress[]
+  TaskRecords TaskRecord[]
 }
 
 model Progress {
-  id        String  @id @default(cuid())
-  userId    String
-  user      User    @relation(fields: [userId], references: [id])
-  completed Boolean
-  code      String
+  id       Int       @id @default(autoincrement())
+  user     User      @relation(fields: [userId], references: [id])
+  userId   String // Clerk user ID
+  tasks    Task[]
+  codeLogs CodeLog[]
 }
 
-model Question {
-  id          String    @id @default(cuid())
-  title       String
-  description String
-  examples    Example[]
-  categoryId  String
-  category    Category  @relation(fields: [categoryId], references: [id])
+model Task {
+  id              Int          @id @default(autoincrement())
+  mainTaskId      Int // E.g., 1 for main task 1
+  mainTaskTitle   String
+  mainTaskTitleEn String
+  taskId          Int // E.g., 1001 for the first sub-task of main task 1
+  title           String
+  titleEn         String
+  description     Json // JSON array with line-separated task descriptions
+  examples        Json // JSON array of example input/output pairs
+  usersProgress   Progress[]
+  TaskRecord      TaskRecord[]
 }
 
-model Example {
-  id         String   @id @default(cuid())
-  questionId String
-  question   Question @relation(fields: [questionId], references: [id])
-  input      String
-  output     String
+model TaskRecord {
+  id     Int    @id @default(autoincrement())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  task   Task   @relation(fields: [taskId], references: [id])
+  taskId Int
+  code   String // Stores user code submission for the task
 }
 
-model Category {
-  id        String     @id @default(cuid())
-  name      String
-  questions Question[]
+model CodeLog {
+  id         Int      @id @default(autoincrement())
+  progress   Progress @relation(fields: [progressId], references: [id])
+  progressId Int
+  code       String // Code snippets for user task progress
+  createdAt  DateTime @default(now())
 }
