@@ -34,7 +34,7 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
         <li>
           <button
             onClick={onHomeClick}
-            className={`block w-full py-2 px-1 text-left hover:bg-blue-500 hover:text-white  ${selectedPage === null ? 'bg-gray-300 dark:bg-gray-600' : ''
+            className={`block w-full py-2 px-1 text-left hover:bg-blue-500 hover:text-white  ${selectedPage === null ? 'bg-stone-300 dark:bg-stone-600' : ''
               }`}
           >
             主頁
@@ -61,7 +61,7 @@ const Sidebar = ({ topics, onSelect, onHomeClick, className, selectedPage }) => 
                           ? 'bg-green-300 dark:bg-green-900' // 當前題目且已過關，顯示深綠色
                           : 'bg-green-200 dark:bg-green-800' // 已過關但非當前題目，顯示淺綠色
                         : selectedPage?.id === page.id
-                          ? 'bg-gray-300 dark:bg-gray-600' // 當前選中的題目但未過關，顯示灰色
+                          ? 'bg-stone-300 dark:bg-stone-600' // 當前選中的題目但未過關，顯示灰色
                           : '' // 其他情況保持原樣
                         }`}
                     >
